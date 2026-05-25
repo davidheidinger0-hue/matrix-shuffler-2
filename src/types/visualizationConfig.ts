@@ -2,7 +2,7 @@ export interface VisualizationConfig {
   width: number
   height: number
   margin: { top: number; right: number; bottom: number; left: number }
-  colorScheme: 'blues' | 'greens' | 'heatmap'
+  colorScheme: 'blues' | 'greens' | 'heatmap' | 'bertifier'
   cellShape: 'rect' | 'circle'
   showLabels: boolean
   encoding: VisualizationEncoding
