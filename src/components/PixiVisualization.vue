@@ -662,20 +662,26 @@ const createCircleCell = (
   cellSize: number,
   normalizedValue: number,
 ) => {
-  const borderColor = getInterpolatedColor(normalizedValue)
-  rect.setStrokeStyle({ width: 1, color: borderColor, alignment: 0.5 })
-  rect.fill({ color: 0xfff, alpha: 0 })
+  rect.setStrokeStyle({ width: 1, color: 0xe2e8f0, alignment: 0.5 })
+  rect.fill({ color: 0xffffff, alpha: 1 })
   rect.rect(0, 0, cellSize, cellSize)
   rect.endFill()
-
-  const valueIndicator = new Graphics()
-  const fillColor = getInterpolatedColor(normalizedValue)
-  valueIndicator.fill({ color: fillColor, alpha: 0.9 })
-  valueIndicator.circle(cellSize / 2, cellSize / 2, normalizedValue * (cellSize / 2))
-  valueIndicator.endFill()
-
-  cell.addChild(valueIndicator)
   cell.addChild(rect)
+  if (normalizedValue > 0) {
+    const valueIndicator = new Graphics()
+    valueIndicator.fill({ color: 0x000000, alpha: 1 })
+    const maxRadius = (cellSize / 2) * Math.SQRT2
+    const radius = Math.sqrt(normalizedValue) * maxRadius
+    valueIndicator.circle(cellSize / 2, cellSize / 2, radius)
+    valueIndicator.endFill()
+    const mask = new Graphics()
+    mask.fill({ color: 0xffffff, alpha: 1 })
+    mask.rect(0, 0, cellSize, cellSize)
+    mask.endFill()
+    valueIndicator.mask = mask
+    cell.addChild(mask)
+    cell.addChild(valueIndicator)
+  }
 }
 
 const createColorCell = (cell: Container, rect: Graphics, alpha: number, cellSize: number) => {
@@ -730,13 +736,13 @@ const createCircleColor = (
   const borderColor = getInterpolatedColor(alpha)
   const fillColor = getInterpolatedColor(alpha)
   rect.setStrokeStyle({ width: 1, color: borderColor })
-  rect.fill({ color: fillColor, alpha: alpha * 0.6 })
+  rect.fill({ color: fillColor, alpha: 1 }) 
   rect.rect(0, 0, cellSize, cellSize)
   rect.endFill()
 
   const valueIndicator = new Graphics()
   const circleColor = getInterpolatedColor(normalizedValue)
-  valueIndicator.fill({ color: circleColor, alpha: 0.9 })
+  valueIndicator.fill({ color: circleColor, alpha: 1 }) 
   const circleRadius = Math.max(normalizedValue * (cellSize / 2.5), cellSize / 8)
   valueIndicator.circle(cellSize / 2, cellSize / 2, circleRadius)
   valueIndicator.endFill()
