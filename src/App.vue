@@ -135,9 +135,14 @@ const exampleDatasets = [
   { name: 'bertin-hotel.csv', path: './examples/bertin_hotel.csv' },
   { name: 'bertin-navy.csv', path: './examples/bertin_navy.csv' },
   { name: 'bertin-towns.csv', path: './examples/bertin_towns.csv' },
+  { name: 'cereal.csv', path: './examples/cereal.csv' },
   { name: 'european-values.csv', path: './examples/european_values.csv' },
+  { name: 'motor_trend_cars', path: './examples/motor_trend_cars.csv' },
   { name: 'sample-data.csv', path: './examples/sample_data.csv' },
   { name: 'test-data.csv', path: './examples/test_data.csv' },
+  { name: 'wholesale_customers_data', path: './examples/wholesale_customers_data.csv' },
+  { name: 'wine_analysis.csv', path: './examples/wine_analysis.csv' },
+  { name: 'zoo.csv', path: './examples/zoo.csv' },
 ]
 
 const openExampleModal = () => {
