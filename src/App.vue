@@ -9,6 +9,7 @@ import { useDatasetStore } from './stores/dataset'
 
 import { useFileUpload } from '@/utils/utils'
 import { generateMatrixSVG } from '@/utils/svgGenerator'
+import CanvasVisualization from './components/CanvasVisualization.vue'
 
 const showImportModal = ref(false)
 const showExampleModal = ref(false)
@@ -338,7 +339,7 @@ const closeHowToUseModal = () => {
               marginRight: showSettingsPanel ? '360px' : '0',
             }"
           >
-            <PixiVisualizationWrapper ref="pixiVisRef" :useRandomData="false" />
+            <CanvasVisualization />
           </div>
         </div>
 
