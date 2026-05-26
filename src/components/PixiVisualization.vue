@@ -763,8 +763,13 @@ const centerContainer = (container: Container) => {
   const scaledWidth = container.width * scale
   const scaledHeight = container.height * scale
 
-  container.x = (app.value.screen.width - scaledWidth) / 2
-  container.y = (app.value.screen.height - scaledHeight) / 2
+  container.x = 20
+  container.y = 20
+
+// Centering logic was removed to keep the top-left corner fixed during resizing
+//  container.x = (app.value.screen.width - scaledWidth) / 2
+//  container.y = (app.value.screen.height - scaledHeight) / 2
+
 }
 
 const createMatrixVisualization = () => {
@@ -909,6 +914,34 @@ onMounted(async () => {
   window.addEventListener('keydown', handleKeyDown)
   window.addEventListener('keyup', handleKeyUp)
 
+  // Handle Zooming and Scrolling via Mouse Wheel
+  if (app.value && app.value.canvas) {
+    app.value.canvas.addEventListener('wheel', (e: WheelEvent) => {
+      e.preventDefault(); // Prevent the whole browser window from scrolling
+      
+      if (!app.value || app.value.stage.children.length === 0) return;
+      
+      const container = app.value.stage.children[0] as Container;
+
+      if (e.ctrlKey || e.metaKey) {
+        // If holding Ctrl/Cmd while scrolling
+        const zoomFactor = 0.05;
+        // Scroll up = zoom in, Scroll down = zoom out
+        const scaleChange = e.deltaY < 0 ? (1 + zoomFactor) : (1 - zoomFactor); 
+        
+        let newScale = container.scale.x * scaleChange;
+        
+        // Prevent zooming in/out too far
+        newScale = Math.max(0.2, Math.min(newScale, 5)); 
+        container.scale.set(newScale);
+
+      } else {
+        // SCROLLING: Standard scroll wheel movement
+        container.y -= e.deltaY;
+        container.x -= e.deltaX;
+      }
+    }, { passive: false });
+  }
   if (containerRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
       if (entries.length > 0) {
