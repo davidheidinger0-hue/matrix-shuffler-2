@@ -15,6 +15,7 @@ const showImportModal = ref(false)
 const showExampleModal = ref(false)
 const showAboutModal = ref(false)
 const showHowToUseModal = ref(false)
+const selectedRenderer = ref<'canvas' | 'pixi'>('canvas')
 
 const visualizationStore = useVisualizationStore()
 const datasetStore = useDatasetStore()
@@ -339,7 +340,22 @@ const closeHowToUseModal = () => {
               marginRight: showSettingsPanel ? '360px' : '0',
             }"
           >
-            <CanvasVisualization />
+            <div class="renderer-toolbar">
+            <label for="renderer-select">Renderer:</label>
+
+            <select id="renderer-select" v-model="selectedRenderer">
+            <option value="canvas">Canvas 2D</option>
+            <option value="pixi">PixiJS</option>
+            </select>
+            </div>
+
+            <CanvasVisualization v-if="selectedRenderer === 'canvas'" />
+
+            <PixiVisualizationWrapper
+             v-else
+              ref="pixiVisRef"
+              :useRandomData="false"
+          />
           </div>
         </div>
 
@@ -464,6 +480,17 @@ const closeHowToUseModal = () => {
 </template>
 
 <style scoped>
+
+.renderer-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  padding-left: 70px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
