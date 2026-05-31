@@ -23,6 +23,7 @@ const colorSchemes = {
   reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
   greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
   viridis: { minColor: '#e0e7f3', maxColor: '#b5e3b5' },
+  black: { minColor: '#000000', maxColor: '#000000' },
 }
 
 const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
@@ -284,6 +285,7 @@ const closeHowToUseModal = () => {
               <a href="#" @click="exportAsSVG">Export as SVG</a>
             </div>
           </li>
+
           <li class="dropdown">
             <a href="#" class="dropbtn">Encoding</a>
             <div class="dropdown-content">
@@ -297,12 +299,14 @@ const closeHowToUseModal = () => {
           <li class="dropdown">
             <a href="#" class="dropbtn">Color Scheme</a>
             <div class="dropdown-content">
+              <a href="#" @click.prevent="applyColorScheme('black')">Black</a>
               <a href="#" @click.prevent="applyColorScheme('blues')">Blues</a>
               <a href="#" @click.prevent="applyColorScheme('reds')">Reds</a>
               <a href="#" @click.prevent="applyColorScheme('greens')">Greens</a>
               <a href="#" @click.prevent="applyColorScheme('viridis')">Viridis</a>
             </div>
           </li>
+
           <li class="dropdown">
             <a href="#" class="dropbtn">Actions</a>
             <div class="dropdown-content">
