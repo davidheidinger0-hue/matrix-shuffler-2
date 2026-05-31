@@ -619,7 +619,7 @@ const createCell = (
 
     const alpha = Math.max(0, Math.min(1, normalizedValue)) // Clamp alpha between 0 and 1
 
-    const encoding: 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' =
+    const encoding: 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart' =
       visualizationStore.config.encoding
 
     switch (encoding) {
@@ -637,6 +637,9 @@ const createCell = (
         break
       case 'dual-bar-charts':
         createDualBarChartsCell(cell, rect, initialValue, cellSize, normalizedValue)
+        break
+      case 'bar-chart':
+        createBarChartCell(cell, rect, initialValue, cellSize, normalizedValue)
         break
     }
 
@@ -733,6 +736,39 @@ const createDualBarChartsCell = (
     blackBox.endFill()
 
     cell.addChild(blackBox)
+  }
+}
+
+const createBarChartCell = (
+  cell: Container,
+  rect: Graphics,
+  value: number,
+  cellSize: number,
+  normalizedValue: number,
+) => {
+  const borderColor = getInterpolatedColor(normalizedValue)
+  const inkColor = getInterpolatedColor(1)
+
+  rect.setStrokeStyle({ width: 1, color: borderColor, alignment: 0.5 })
+  rect.fill({ color: 0xffffff, alpha: 1 })
+  rect.rect(0, 0, cellSize, cellSize)
+  rect.endFill()
+  cell.addChild(rect)
+
+  const barWidth = cellSize
+  const xPos = 0
+  const barHeight = Math.round(normalizedValue * cellSize)
+
+  if (barHeight > 0) {
+    const bar = new Graphics()
+    bar.fill({ color: inkColor, alpha: 1 })
+    bar.setStrokeStyle({ width: 1, color: inkColor, alignment: 1 })
+
+    const yStart = cellSize - barHeight
+    bar.rect(xPos, yStart, barWidth, barHeight)
+    bar.endFill()
+
+    cell.addChild(bar)
   }
 }
 

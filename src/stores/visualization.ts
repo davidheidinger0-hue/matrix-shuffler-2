@@ -59,7 +59,7 @@ export const useVisualizationStore = defineStore('visualization', {
     },
     settings: {
       colorScheme: 'black',
-      minColor: '#ffffff',
+      minColor: '#f0f0f0',
       maxColor: '#000000',
       normalization: 'none',
       labelRotation: 45,

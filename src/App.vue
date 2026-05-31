@@ -23,7 +23,7 @@ const colorSchemes = {
   reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
   greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
   viridis: { minColor: '#e0e7f3', maxColor: '#b5e3b5' },
-  black: { minColor: '#ffffff', maxColor: '#000000' },
+  black: { minColor: '#f0f0f0', maxColor: '#000000' },
 }
 
 const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
@@ -35,7 +35,7 @@ const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
 }
 
 const changeEncoding = (encoding: string) => {
-  visualizationStore.setEncoding(encoding as 'circle' | 'color' | 'circle-color' | 'color-text')
+  visualizationStore.setEncoding(encoding as 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart')
 }
 
 const handleImportData = () => {
@@ -294,6 +294,7 @@ const closeHowToUseModal = () => {
               <a href="#" @click.prevent="changeEncoding('circle-color')">Circle+Color</a>
               <a href="#" @click.prevent="changeEncoding('color-text')">Color+Text</a>
               <a href="#" @click.prevent="changeEncoding('dual-bar-charts')">Bertin Dual Bar Charts</a>
+              <a href="#" @click.prevent="changeEncoding('bar-chart')">Bertin Bar Chart</a>
             </div>
           </li>
 
