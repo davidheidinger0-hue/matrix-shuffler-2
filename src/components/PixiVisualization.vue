@@ -619,7 +619,7 @@ const createCell = (
 
     const alpha = Math.max(0, Math.min(1, normalizedValue)) // Clamp alpha between 0 and 1
 
-    const encoding: 'circle' | 'color' | 'circle-color' | 'color-text' =
+    const encoding: 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' =
       visualizationStore.config.encoding
 
     switch (encoding) {
@@ -634,6 +634,9 @@ const createCell = (
         break
       case 'circle-color':
         createCircleColor(cell, rect, initialValue, alpha, cellSize, normalizedValue)
+        break
+      case 'dual-bar-charts':
+        createDualBarChartsCell(cell, rect, initialValue, cellSize, normalizedValue)
         break
     }
 
@@ -676,6 +679,61 @@ const createCircleCell = (
 
   cell.addChild(valueIndicator)
   cell.addChild(rect)
+}
+
+const createDualBarChartsCell = (
+  cell: Container,
+  rect: Graphics,
+  value: number,
+  cellSize: number,
+  normalizedValue: number,
+) => {
+  const safeValue = Math.max(0, Math.min(1, normalizedValue || 0))
+
+  const borderColor = getInterpolatedColor(normalizedValue)
+  const inkColor = getInterpolatedColor(1)
+
+  rect.setStrokeStyle({ width: 1, color: borderColor, alignment: 0.5 })
+  rect.fill({ color: 0xffffff, alpha: 1 })
+  rect.rect(0, 0, cellSize, cellSize)
+  rect.endFill()
+  cell.addChild(rect)
+
+  const hatchHeight = Math.round(Math.min(1, safeValue * 2) * cellSize)
+
+  if (hatchHeight > 0) {
+    const hatch = new Graphics()
+    hatch.setStrokeStyle({ width: 1, color: inkColor })
+    const gap = 4
+
+    for (let i = -cellSize; i < cellSize * 2; i += gap) {
+      hatch.moveTo(i, hatchHeight)
+      hatch.lineTo(i + hatchHeight, 0)
+    }
+    hatch.stroke()
+
+    const mask = new Graphics()
+    mask.fill({ color: 0xffffff, alpha: 1 })
+    mask.rect(0, 0, cellSize, hatchHeight)
+    mask.endFill()
+
+    hatch.mask = mask
+    cell.addChild(mask)
+    cell.addChild(hatch)
+  }
+
+  if (safeValue > 0.5) {
+    const blackHeight = Math.round((safeValue - 0.5) * 2 * cellSize)
+    const blackYStart = cellSize - blackHeight
+
+    const blackBox = new Graphics()
+    blackBox.fill({ color: inkColor, alpha: 1 })
+    blackBox.setStrokeStyle({ width: 1, color: inkColor, alignment: 1 })
+    blackBox.rect(0, blackYStart, cellSize, blackHeight)
+    blackBox.endFill()
+
+    cell.addChild(blackBox)
+  }
 }
 
 const createColorCell = (cell: Container, rect: Graphics, alpha: number, cellSize: number) => {
@@ -912,21 +970,21 @@ onMounted(async () => {
   if (app.value && app.value.canvas) {
     app.value.canvas.addEventListener('wheel', (e: WheelEvent) => {
       e.preventDefault(); // Prevent the whole browser window from scrolling
-      
+
       if (!app.value || app.value.stage.children.length === 0) return;
-      
+
       const container = app.value.stage.children[0] as Container;
 
       if (e.ctrlKey || e.metaKey) {
         // If holding Ctrl/Cmd while scrolling
         const zoomFactor = 0.05;
         // Scroll up = zoom in, Scroll down = zoom out
-        const scaleChange = e.deltaY < 0 ? (1 + zoomFactor) : (1 - zoomFactor); 
-        
+        const scaleChange = e.deltaY < 0 ? (1 + zoomFactor) : (1 - zoomFactor);
+
         let newScale = container.scale.x * scaleChange;
-        
+
         // Prevent zooming in/out too far
-        newScale = Math.max(0.2, Math.min(newScale, 5)); 
+        newScale = Math.max(0.2, Math.min(newScale, 5));
         container.scale.set(newScale);
 
       } else {

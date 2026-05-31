@@ -11,5 +11,4 @@ export interface VisualizationConfig {
   labelSize: number
 }
 
-export type VisualizationEncoding = 'circle' | 'color' | 'circle-color' | 'color-text'
-
+export type VisualizationEncoding = 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-chart'

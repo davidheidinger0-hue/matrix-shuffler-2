@@ -23,7 +23,7 @@ const colorSchemes = {
   reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
   greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
   viridis: { minColor: '#e0e7f3', maxColor: '#b5e3b5' },
-  black: { minColor: '#000000', maxColor: '#000000' },
+  black: { minColor: '#ffffff', maxColor: '#000000' },
 }
 
 const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
@@ -293,6 +293,7 @@ const closeHowToUseModal = () => {
               <a href="#" @click.prevent="changeEncoding('color')">Rectangles</a>
               <a href="#" @click.prevent="changeEncoding('circle-color')">Circle+Color</a>
               <a href="#" @click.prevent="changeEncoding('color-text')">Color+Text</a>
+              <a href="#" @click.prevent="changeEncoding('dual-bar-charts')">Bertin Dual Bar Charts</a>
             </div>
           </li>
 
