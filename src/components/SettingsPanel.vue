@@ -107,40 +107,6 @@
       </div>
 
       <div class="setting-group">
-        <h3 class="settings-heading">Color Scheme Presets</h3>
-        <div class="color-schemes">
-          <button
-            @click="applyColorScheme('blues')"
-            class="color-scheme-btn"
-            :class="{ active: localSettings.colorScheme === 'blues' }"
-          >
-            Blues
-          </button>
-          <button
-            @click="applyColorScheme('reds')"
-            class="color-scheme-btn"
-            :class="{ active: localSettings.colorScheme === 'reds' }"
-          >
-            Reds
-          </button>
-          <button
-            @click="applyColorScheme('greens')"
-            class="color-scheme-btn"
-            :class="{ active: localSettings.colorScheme === 'greens' }"
-          >
-            Greens
-          </button>
-          <button
-            @click="applyColorScheme('viridis')"
-            class="color-scheme-btn"
-            :class="{ active: localSettings.colorScheme === 'viridis' }"
-          >
-            Viridis
-          </button>
-        </div>
-      </div>
-
-      <div class="setting-group">
         <button @click="resetSettings" class="btn-reset">Reset to Defaults</button>
       </div>
 
