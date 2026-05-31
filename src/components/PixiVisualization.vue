@@ -619,7 +619,7 @@ const createCell = (
 
     const alpha = Math.max(0, Math.min(1, normalizedValue)) // Clamp alpha between 0 and 1
 
-    const encoding: 'circle' | 'color' | 'circle-color' | 'color-text' =
+    const encoding: 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart' =
       visualizationStore.config.encoding
 
     switch (encoding) {
@@ -634,6 +634,12 @@ const createCell = (
         break
       case 'circle-color':
         createCircleColor(cell, rect, initialValue, alpha, cellSize, normalizedValue)
+        break
+      case 'dual-bar-charts':
+        createDualBarChartsCell(cell, rect, initialValue, cellSize, normalizedValue)
+        break
+      case 'bar-chart':
+        createBarChartCell(cell, rect, initialValue, cellSize, normalizedValue)
         break
     }
 
@@ -662,25 +668,107 @@ const createCircleCell = (
   cellSize: number,
   normalizedValue: number,
 ) => {
-  rect.setStrokeStyle({ width: 1, color: 0xe2e8f0, alignment: 0.5 })
+  const borderColor = getInterpolatedColor(normalizedValue)
+  rect.setStrokeStyle({ width: 1, color: borderColor, alignment: 0.5 })
+  rect.fill({ color: 0xfff, alpha: 0 })
+  rect.rect(0, 0, cellSize, cellSize)
+  rect.endFill()
+
+  const valueIndicator = new Graphics()
+  const fillColor = getInterpolatedColor(normalizedValue)
+  valueIndicator.fill({ color: fillColor, alpha: 0.9 })
+  valueIndicator.circle(cellSize / 2, cellSize / 2, normalizedValue * (cellSize / 2))
+  valueIndicator.endFill()
+
+  cell.addChild(valueIndicator)
+  cell.addChild(rect)
+}
+
+const createDualBarChartsCell = (
+  cell: Container,
+  rect: Graphics,
+  value: number,
+  cellSize: number,
+  normalizedValue: number,
+) => {
+  const safeValue = Math.max(0, Math.min(1, normalizedValue || 0))
+
+  const borderColor = getInterpolatedColor(normalizedValue)
+  const inkColor = getInterpolatedColor(1)
+
+  rect.setStrokeStyle({ width: 1, color: borderColor, alignment: 0.5 })
   rect.fill({ color: 0xffffff, alpha: 1 })
   rect.rect(0, 0, cellSize, cellSize)
   rect.endFill()
   cell.addChild(rect)
-  if (normalizedValue > 0) {
-    const valueIndicator = new Graphics()
-    valueIndicator.fill({ color: 0x000000, alpha: 1 })
-    const maxRadius = (cellSize / 2) * Math.SQRT2
-    const radius = Math.sqrt(normalizedValue) * maxRadius
-    valueIndicator.circle(cellSize / 2, cellSize / 2, radius)
-    valueIndicator.endFill()
+
+  const hatchHeight = Math.round(Math.min(1, safeValue * 2) * cellSize)
+
+  if (hatchHeight > 0) {
+    const hatch = new Graphics()
+    hatch.setStrokeStyle({ width: 1, color: inkColor })
+    const gap = 4
+
+    for (let i = -cellSize; i < cellSize * 2; i += gap) {
+      hatch.moveTo(i, hatchHeight)
+      hatch.lineTo(i + hatchHeight, 0)
+    }
+    hatch.stroke()
+
     const mask = new Graphics()
     mask.fill({ color: 0xffffff, alpha: 1 })
-    mask.rect(0, 0, cellSize, cellSize)
+    mask.rect(0, 0, cellSize, hatchHeight)
     mask.endFill()
-    valueIndicator.mask = mask
+
+    hatch.mask = mask
     cell.addChild(mask)
-    cell.addChild(valueIndicator)
+    cell.addChild(hatch)
+  }
+
+  if (safeValue > 0.5) {
+    const blackHeight = Math.round((safeValue - 0.5) * 2 * cellSize)
+    const blackYStart = cellSize - blackHeight
+
+    const blackBox = new Graphics()
+    blackBox.fill({ color: inkColor, alpha: 1 })
+    blackBox.setStrokeStyle({ width: 1, color: inkColor, alignment: 1 })
+    blackBox.rect(0, blackYStart, cellSize, blackHeight)
+    blackBox.endFill()
+
+    cell.addChild(blackBox)
+  }
+}
+
+const createBarChartCell = (
+  cell: Container,
+  rect: Graphics,
+  value: number,
+  cellSize: number,
+  normalizedValue: number,
+) => {
+  const borderColor = getInterpolatedColor(normalizedValue)
+  const inkColor = getInterpolatedColor(1)
+
+  rect.setStrokeStyle({ width: 1, color: borderColor, alignment: 0.5 })
+  rect.fill({ color: 0xffffff, alpha: 1 })
+  rect.rect(0, 0, cellSize, cellSize)
+  rect.endFill()
+  cell.addChild(rect)
+
+  const barWidth = cellSize
+  const xPos = 0
+  const barHeight = Math.round(normalizedValue * cellSize)
+
+  if (barHeight > 0) {
+    const bar = new Graphics()
+    bar.fill({ color: inkColor, alpha: 1 })
+    bar.setStrokeStyle({ width: 1, color: inkColor, alignment: 1 })
+
+    const yStart = cellSize - barHeight
+    bar.rect(xPos, yStart, barWidth, barHeight)
+    bar.endFill()
+
+    cell.addChild(bar)
   }
 }
 
@@ -736,13 +824,13 @@ const createCircleColor = (
   const borderColor = getInterpolatedColor(alpha)
   const fillColor = getInterpolatedColor(alpha)
   rect.setStrokeStyle({ width: 1, color: borderColor })
-  rect.fill({ color: fillColor, alpha: 1 }) 
+  rect.fill({ color: fillColor, alpha: alpha * 0.6 })
   rect.rect(0, 0, cellSize, cellSize)
   rect.endFill()
 
   const valueIndicator = new Graphics()
   const circleColor = getInterpolatedColor(normalizedValue)
-  valueIndicator.fill({ color: circleColor, alpha: 1 }) 
+  valueIndicator.fill({ color: circleColor, alpha: 0.9 })
   const circleRadius = Math.max(normalizedValue * (cellSize / 2.5), cellSize / 8)
   valueIndicator.circle(cellSize / 2, cellSize / 2, circleRadius)
   valueIndicator.endFill()
@@ -918,21 +1006,21 @@ onMounted(async () => {
   if (app.value && app.value.canvas) {
     app.value.canvas.addEventListener('wheel', (e: WheelEvent) => {
       e.preventDefault(); // Prevent the whole browser window from scrolling
-      
+
       if (!app.value || app.value.stage.children.length === 0) return;
-      
+
       const container = app.value.stage.children[0] as Container;
 
       if (e.ctrlKey || e.metaKey) {
         // If holding Ctrl/Cmd while scrolling
         const zoomFactor = 0.05;
         // Scroll up = zoom in, Scroll down = zoom out
-        const scaleChange = e.deltaY < 0 ? (1 + zoomFactor) : (1 - zoomFactor); 
-        
+        const scaleChange = e.deltaY < 0 ? (1 + zoomFactor) : (1 - zoomFactor);
+
         let newScale = container.scale.x * scaleChange;
-        
+
         // Prevent zooming in/out too far
-        newScale = Math.max(0.2, Math.min(newScale, 5)); 
+        newScale = Math.max(0.2, Math.min(newScale, 5));
         container.scale.set(newScale);
 
       } else {
