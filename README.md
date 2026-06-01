@@ -1,6 +1,7 @@
-# Matrix Shuffler
+# Matrix Shuffler 2
 
 A web application for matrix reordering.
+We build onto the orignal Matrix Shuffler: https://github.com/AndrejKnaus/matrix-shuffler
 
 ## Prerequisites
 

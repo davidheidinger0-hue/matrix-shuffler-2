@@ -20,8 +20,24 @@ const selectedRenderer = ref<'canvas' | 'pixi'>('canvas')
 const visualizationStore = useVisualizationStore()
 const datasetStore = useDatasetStore()
 
+const colorSchemes = {
+  blues: { minColor: '#e3f0fb', maxColor: '#7daee6' },
+  reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
+  greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
+  viridis: { minColor: '#e0e7f3', maxColor: '#b5e3b5' },
+  black: { minColor: '#f0f0f0', maxColor: '#000000' },
+}
+
+const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
+  visualizationStore.updateSettings({
+    colorScheme: scheme,
+    minColor: colorSchemes[scheme].minColor,
+    maxColor: colorSchemes[scheme].maxColor
+  })
+}
+
 const changeEncoding = (encoding: string) => {
-  visualizationStore.setEncoding(encoding as 'circle' | 'color' | 'circle-color' | 'color-text')
+  visualizationStore.setEncoding(encoding as 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart')
 }
 
 const handleImportData = () => {
@@ -271,17 +287,30 @@ const closeHowToUseModal = () => {
               <a href="#" @click="exportAsSVG">Export as SVG</a>
             </div>
           </li>
+
           <li class="dropdown">
-            <a href="#" class="dropbtn">View</a>
+            <a href="#" class="dropbtn">Encoding</a>
             <div class="dropdown-content">
-              <a href="#" @click.prevent="changeEncoding('circle')">Display as Circles</a>
-              <a href="#" @click.prevent="changeEncoding('color')">Display as Rectangles</a>
-              <a href="#" @click.prevent="changeEncoding('circle-color')"
-                >Display as Circle+Color</a
-              >
-              <a href="#" @click.prevent="changeEncoding('color-text')">Display as Color+Text</a>
+              <a href="#" @click.prevent="changeEncoding('circle')">Circles</a>
+              <a href="#" @click.prevent="changeEncoding('color')">Rectangles</a>
+              <a href="#" @click.prevent="changeEncoding('circle-color')">Circle+Color</a>
+              <a href="#" @click.prevent="changeEncoding('color-text')">Color+Text</a>
+              <a href="#" @click.prevent="changeEncoding('dual-bar-charts')">Bertin Dual Bar Charts</a>
+              <a href="#" @click.prevent="changeEncoding('bar-chart')">Bertin Bar Chart</a>
             </div>
           </li>
+
+          <li class="dropdown">
+            <a href="#" class="dropbtn">Color Scheme</a>
+            <div class="dropdown-content">
+              <a href="#" @click.prevent="applyColorScheme('black')">Black</a>
+              <a href="#" @click.prevent="applyColorScheme('blues')">Blues</a>
+              <a href="#" @click.prevent="applyColorScheme('reds')">Reds</a>
+              <a href="#" @click.prevent="applyColorScheme('greens')">Greens</a>
+              <a href="#" @click.prevent="applyColorScheme('viridis')">Viridis</a>
+            </div>
+          </li>
+
           <li class="dropdown">
             <a href="#" class="dropbtn">Actions</a>
             <div class="dropdown-content">
