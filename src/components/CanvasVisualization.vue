@@ -11,7 +11,7 @@ const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 const visualizationStore = useVisualizationStore()
 
-const padding = 140
+const padding = 260
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
 const getLabelRotation = () => visualizationStore.settings.labelRotation || 45
@@ -115,17 +115,27 @@ const drawMatrix = () => {
     row.forEach((cell, colIndex) => {
       const value = cell.normalizedValue ?? Number(cell.initialValue) ?? 0
       const normalizedValue = Math.min(1, Math.max(0, value))
+      const alpha = normalizedValue
 
       const x = padding + colIndex * cellSize
       const y = padding + rowIndex * cellSize
 
+      ctx.globalAlpha = alpha
       ctx.fillStyle = interpolateColor(
         normalizedValue,
         visualizationStore.settings.minColor,
         visualizationStore.settings.maxColor,
       )
-
       ctx.fillRect(x, y, cellSize - 2, cellSize - 2)
+      ctx.globalAlpha = 1
+
+      ctx.strokeStyle = interpolateColor(
+        normalizedValue,
+        visualizationStore.settings.minColor,
+        visualizationStore.settings.maxColor,
+      )
+      ctx.lineWidth = 1
+      ctx.strokeRect(x, y, cellSize - 2, cellSize - 2)
 
       if (
         interactionStore.hoveredCell &&
