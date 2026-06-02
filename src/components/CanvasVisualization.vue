@@ -2,19 +2,48 @@
 import { ref, onMounted, watch } from 'vue'
 import { useDatasetStore } from '@/stores/dataset'
 import { useInteractionStore } from '@/stores/interaction'
+import { useVisualizationStore } from '@/stores/visualization'
 import MatrixInteractionOverlay from './MatrixInteractionOverlay.vue'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
+const visualizationStore = useVisualizationStore()
 
-const cellSize = 40
 const padding = 140
 
+const getCellSize = () => visualizationStore.settings.cellSize || 40
+const getLabelRotation = () => visualizationStore.settings.labelRotation || 45
+
+const hexToRgb = (hex: string) => {
+  const cleanHex = hex.replace('#', '')
+  const bigint = parseInt(cleanHex, 16)
+
+  return {
+    r: (bigint >> 16) & 255,
+    g: (bigint >> 8) & 255,
+    b: bigint & 255,
+  }
+}
+
+// interpolate color between the configured min and max color
+const interpolateColor = (value: number, minColor: string, maxColor: string) => {
+  const min = hexToRgb(minColor)
+  const max = hexToRgb(maxColor)
+
+  const r = Math.round(min.r + (max.r - min.r) * value)
+  const g = Math.round(min.g + (max.g - min.g) * value)
+  const b = Math.round(min.b + (max.b - min.b) * value)
+
+  return `rgb(${r}, ${g}, ${b})`
+}
+
 const drawMatrix = () => {
+  const cellSize = getCellSize()
   const canvas = canvasRef.value
   const matrix = datasetStore.currentMatrix
+
   if (!canvas || !matrix) return
 
   const ctx = canvas.getContext('2d')
@@ -25,7 +54,7 @@ const drawMatrix = () => {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  ctx.font = '12px Arial'
+  ctx.font = `${visualizationStore.config.labelSize}px Arial`
   ctx.textBaseline = 'middle'
 
   matrix.columnNames.forEach((name, colIndex) => {
@@ -50,7 +79,7 @@ const drawMatrix = () => {
 
     ctx.save()
     ctx.translate(x + cellSize / 2, padding - 35)
-    ctx.rotate(-Math.PI / 4)
+    ctx.rotate((-getLabelRotation() * Math.PI) / 180)
     ctx.fillStyle = 'black'
     ctx.textAlign = 'center'
     ctx.fillText(name, 0, 0)
@@ -84,13 +113,18 @@ const drawMatrix = () => {
 
   matrix.values.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
-      const value = Number(cell.initialValue) || 0
-      const intensity = Math.min(255, Math.max(0, 255 - value * 255))
+      const value = cell.normalizedValue ?? Number(cell.initialValue) ?? 0
+      const normalizedValue = Math.min(1, Math.max(0, value))
 
       const x = padding + colIndex * cellSize
       const y = padding + rowIndex * cellSize
 
-      ctx.fillStyle = `rgb(${intensity}, ${intensity}, 255)`
+      ctx.fillStyle = interpolateColor(
+        normalizedValue,
+        visualizationStore.settings.minColor,
+        visualizationStore.settings.maxColor,
+      )
+
       ctx.fillRect(x, y, cellSize - 2, cellSize - 2)
 
       if (
@@ -127,8 +161,6 @@ const drawMatrix = () => {
   }
 }
 
-
-
 onMounted(drawMatrix)
 
 watch(
@@ -147,12 +179,20 @@ watch(
   () => drawMatrix(),
   { deep: true },
 )
+
+watch(
+  () => visualizationStore.settings,
+  () => drawMatrix(),
+  { deep: true },
+)
 </script>
 
 <template>
   <div class="canvas-wrapper">
     <canvas ref="canvasRef"></canvas>
+
     <MatrixInteractionOverlay />
+
     <div
       v-if="interactionStore.hoveredCell && datasetStore.currentMatrix"
       class="tooltip"

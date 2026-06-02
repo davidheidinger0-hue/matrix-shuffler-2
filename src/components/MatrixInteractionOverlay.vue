@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { useDatasetStore } from '@/stores/dataset'
 import { useInteractionStore } from '@/stores/interaction'
+import { useVisualizationStore } from '@/stores/visualization'
 
+const visualizationStore = useVisualizationStore()
 const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 
-const cellSize = 40
+//const cellSize = 40
+const getCellSize = () =>
+  visualizationStore.settings.cellSize || 40
 const padding = 140
 
 const getMousePosition = (event: MouseEvent) => {
@@ -22,8 +26,8 @@ const updateHoverState = (x: number, y: number) => {
   const matrix = datasetStore.currentMatrix
   if (!matrix) return
 
-  const col = Math.floor((x - padding) / cellSize)
-  const row = Math.floor((y - padding) / cellSize)
+  const col = Math.floor((x - padding) / getCellSize())
+  const row = Math.floor((y - padding) / getCellSize())
 
   interactionStore.hoveredCell = null
   interactionStore.hoveredLabel = null
@@ -71,12 +75,12 @@ const handleMouseMove = (event: MouseEvent) => {
   updateHoverState(pos.x, pos.y)
 
   if (interactionStore.dragState?.type === 'row') {
-    const target = Math.round((pos.y - padding) / cellSize)
+    const target = Math.round((pos.y - padding) / getCellSize())
     interactionStore.dragTargetIndex = Math.max(0, Math.min(matrix.rowNames.length, target))
   }
 
   if (interactionStore.dragState?.type === 'column') {
-    const target = Math.round((pos.x - padding) / cellSize)
+    const target = Math.round((pos.x - padding) / getCellSize())
     interactionStore.dragTargetIndex = Math.max(0, Math.min(matrix.columnNames.length, target))
   }
 }
