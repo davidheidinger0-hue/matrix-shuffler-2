@@ -120,6 +120,88 @@ const drawColorTextCell = (
   ctx.fillText(value.toString(), x + cellSize / 2, y + cellSize / 2)
 }
 
+const drawBarChartCell = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  cellSize: number,
+  normalizedValue: number,
+  inkColor: string,
+  borderColor: string,
+) => {
+  ctx.fillStyle = 'white'
+  ctx.fillRect(x, y, cellSize - 2, cellSize - 2)
+
+  ctx.strokeStyle = borderColor
+  ctx.lineWidth = 1
+  ctx.strokeRect(x, y, cellSize - 2, cellSize - 2)
+
+  const barHeight = Math.round(normalizedValue * cellSize)
+
+  if (barHeight > 0) {
+    const yStart = y + cellSize - barHeight
+
+    ctx.fillStyle = inkColor
+    ctx.fillRect(x, yStart, cellSize - 2, barHeight)
+
+    ctx.strokeStyle = inkColor
+    ctx.strokeRect(x, yStart, cellSize - 2, barHeight)
+  }
+}
+
+const drawDualBarChartsCell = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  cellSize: number,
+  normalizedValue: number,
+  inkColor: string,
+  borderColor: string,
+) => {
+  const safeValue = Math.max(0, Math.min(1, normalizedValue || 0))
+
+  ctx.fillStyle = 'white'
+  ctx.fillRect(x, y, cellSize - 2, cellSize - 2)
+
+  ctx.strokeStyle = borderColor
+  ctx.lineWidth = 1
+  ctx.strokeRect(x, y, cellSize - 2, cellSize - 2)
+
+  const hatchHeight = Math.round(Math.min(1, safeValue * 2) * cellSize)
+
+  if (hatchHeight > 0) {
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(x, y, cellSize - 2, hatchHeight)
+    ctx.clip()
+
+    ctx.strokeStyle = inkColor
+    ctx.lineWidth = 1
+
+    const gap = 4
+
+    for (let i = -cellSize; i < cellSize * 2; i += gap) {
+      ctx.beginPath()
+      ctx.moveTo(x + i, y + hatchHeight)
+      ctx.lineTo(x + i + hatchHeight, y)
+      ctx.stroke()
+    }
+
+    ctx.restore()
+  }
+
+  if (safeValue > 0.5) {
+    const blackHeight = Math.round((safeValue - 0.5) * 2 * cellSize)
+    const blackYStart = y + cellSize - blackHeight
+
+    ctx.fillStyle = inkColor
+    ctx.fillRect(x, blackYStart, cellSize - 2, blackHeight)
+
+    ctx.strokeStyle = inkColor
+    ctx.strokeRect(x, blackYStart, cellSize - 2, blackHeight)
+  }
+}
+
 const drawMatrix = () => {
   const cellSize = getCellSize()
   const canvas = canvasRef.value
@@ -231,6 +313,38 @@ const drawMatrix = () => {
         case 'color':
         default:
           drawColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+          break
+
+        case 'bar-chart':
+          drawBarChartCell(
+            ctx,
+            x,
+            y,
+            cellSize,
+            normalizedValue,
+            interpolateColor(
+              1,
+              visualizationStore.settings.minColor,
+              visualizationStore.settings.maxColor,
+            ),
+            cellColor,
+          )
+          break
+
+        case 'dual-bar-charts':
+          drawDualBarChartsCell(
+            ctx,
+            x,
+            y,
+            cellSize,
+            normalizedValue,
+            interpolateColor(
+              1,
+              visualizationStore.settings.minColor,
+              visualizationStore.settings.maxColor,
+            ),
+            cellColor,
+          )
           break
       }
 
