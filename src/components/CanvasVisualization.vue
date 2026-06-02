@@ -11,7 +11,7 @@ const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 const visualizationStore = useVisualizationStore()
 
-const padding = 260
+const padding = 140
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
 const getLabelRotation = () => visualizationStore.settings.labelRotation || 45
@@ -37,6 +37,87 @@ const interpolateColor = (value: number, minColor: string, maxColor: string) => 
   const b = Math.round(min.b + (max.b - min.b) * value)
 
   return `rgb(${r}, ${g}, ${b})`
+}
+// encodings
+const drawColorCell = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  cellSize: number,
+  normalizedValue: number,
+  cellColor: string,
+) => {
+  ctx.globalAlpha = normalizedValue
+  ctx.fillStyle = cellColor
+  ctx.fillRect(x, y, cellSize - 2, cellSize - 2)
+  ctx.globalAlpha = 1
+
+  ctx.strokeStyle = cellColor
+  ctx.lineWidth = 1
+  ctx.strokeRect(x, y, cellSize - 2, cellSize - 2)
+}
+
+const drawCircleCell = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  cellSize: number,
+  normalizedValue: number,
+  cellColor: string,
+) => {
+  ctx.strokeStyle = cellColor
+  ctx.lineWidth = 1
+  ctx.strokeRect(x, y, cellSize - 2, cellSize - 2)
+
+  ctx.beginPath()
+  ctx.arc(
+    x + cellSize / 2,
+    y + cellSize / 2,
+    normalizedValue * (cellSize / 2),
+    0,
+    Math.PI * 2,
+  )
+  ctx.fillStyle = cellColor
+  ctx.globalAlpha = 0.9
+  ctx.fill()
+  ctx.globalAlpha = 1
+}
+
+const drawCircleColorCell = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  cellSize: number,
+  normalizedValue: number,
+  cellColor: string,
+) => {
+  drawColorCell(ctx, x, y, cellSize, normalizedValue * 0.6, cellColor)
+
+  const radius = Math.max(normalizedValue * (cellSize / 2.5), cellSize / 8)
+
+  ctx.beginPath()
+  ctx.arc(x + cellSize / 2, y + cellSize / 2, radius, 0, Math.PI * 2)
+  ctx.fillStyle = cellColor
+  ctx.globalAlpha = 0.9
+  ctx.fill()
+  ctx.globalAlpha = 1
+}
+
+const drawColorTextCell = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  cellSize: number,
+  normalizedValue: number,
+  cellColor: string,
+  value: number,
+) => {
+  drawColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+
+  ctx.fillStyle = 'black'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(value.toString(), x + cellSize / 2, y + cellSize / 2)
 }
 
 const drawMatrix = () => {
@@ -115,27 +196,43 @@ const drawMatrix = () => {
     row.forEach((cell, colIndex) => {
       const value = cell.normalizedValue ?? Number(cell.initialValue) ?? 0
       const normalizedValue = Math.min(1, Math.max(0, value))
-      const alpha = normalizedValue
+      //const alpha = normalizedValue
 
       const x = padding + colIndex * cellSize
       const y = padding + rowIndex * cellSize
 
-      ctx.globalAlpha = alpha
-      ctx.fillStyle = interpolateColor(
+      const cellColor = interpolateColor(
         normalizedValue,
         visualizationStore.settings.minColor,
         visualizationStore.settings.maxColor,
       )
-      ctx.fillRect(x, y, cellSize - 2, cellSize - 2)
-      ctx.globalAlpha = 1
 
-      ctx.strokeStyle = interpolateColor(
-        normalizedValue,
-        visualizationStore.settings.minColor,
-        visualizationStore.settings.maxColor,
-      )
-      ctx.lineWidth = 1
-      ctx.strokeRect(x, y, cellSize - 2, cellSize - 2)
+      switch (visualizationStore.config.encoding) {
+        case 'circle':
+          drawCircleCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+          break
+
+        case 'circle-color':
+          drawCircleColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+          break
+
+        case 'color-text':
+          drawColorTextCell(
+            ctx,
+            x,
+            y,
+            cellSize,
+            normalizedValue,
+            cellColor,
+            Number(cell.initialValue),
+          )
+          break
+
+        case 'color':
+        default:
+          drawColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+          break
+      }
 
       if (
         interactionStore.hoveredCell &&
@@ -174,7 +271,11 @@ const drawMatrix = () => {
 onMounted(drawMatrix)
 
 watch(
-  () => datasetStore.currentMatrix,
+  [
+    () => datasetStore.currentMatrix,
+    () => visualizationStore.settings,
+    () => visualizationStore.config.encoding,
+  ],
   () => drawMatrix(),
   { deep: true },
 )
@@ -190,11 +291,17 @@ watch(
   { deep: true },
 )
 
+/*
 watch(
   () => visualizationStore.settings,
   () => drawMatrix(),
   { deep: true },
 )
+
+watch(
+  () => visualizationStore.config.encoding,
+  () => drawMatrix(),
+)*/
 </script>
 
 <template>
