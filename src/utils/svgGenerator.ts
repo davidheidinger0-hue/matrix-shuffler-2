@@ -1,7 +1,7 @@
 import type { MatrixData } from '@/stores/dataset'
 
 interface SvgGenOptions {
-  encoding: 'circle' | 'color' | 'circle-color' | 'color-text'
+  encoding: 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart'
   cellSize: number
   cellSpacing: number
   labelRotation: number

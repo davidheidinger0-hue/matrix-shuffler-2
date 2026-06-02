@@ -274,9 +274,19 @@ const drawMatrix = () => {
     ctx.fillText(name, padding - 10, y + cellSize / 2)
   })
 
+    const maxInitialValue = Math.max(
+  ...matrix.values.flat().map((cell) => Number(cell.initialValue) || 0),
+)
+
   matrix.values.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
-      const value = cell.normalizedValue ?? Number(cell.initialValue) ?? 0
+
+      if (rowIndex === 0 && colIndex === 0) {
+        console.log(cell)
+      }
+      const rawValue = Number(cell.initialValue) || 0
+      const value = cell.normalizedValue ?? (maxInitialValue > 0 ? rawValue / maxInitialValue : 0)
+
       const normalizedValue = Math.min(1, Math.max(0, value))
       //const alpha = normalizedValue
 
@@ -289,64 +299,64 @@ const drawMatrix = () => {
         visualizationStore.settings.maxColor,
       )
 
-      switch (visualizationStore.config.encoding) {
-        case 'circle':
-          drawCircleCell(ctx, x, y, cellSize, normalizedValue, cellColor)
-          break
+  switch (visualizationStore.config.encoding) {
+    case 'circle':
+      drawCircleCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+      break
 
-        case 'circle-color':
-          drawCircleColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
-          break
+    case 'circle-color':
+      drawCircleColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+      break
 
-        case 'color-text':
-          drawColorTextCell(
-            ctx,
-            x,
-            y,
-            cellSize,
-            normalizedValue,
-            cellColor,
-            Number(cell.initialValue),
-          )
-          break
+    case 'color-text':
+      drawColorTextCell(
+        ctx,
+        x,
+        y,
+        cellSize,
+        normalizedValue,
+        cellColor,
+        Number(cell.initialValue),
+      )
+      break
 
-        case 'color':
-        default:
-          drawColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
-          break
+    case 'bar-chart':
+      drawBarChartCell(
+        ctx,
+        x,
+        y,
+        cellSize,
+        normalizedValue,
+        interpolateColor(
+          1,
+          visualizationStore.settings.minColor,
+          visualizationStore.settings.maxColor,
+        ),
+        cellColor,
+      )
+      break
 
-        case 'bar-chart':
-          drawBarChartCell(
-            ctx,
-            x,
-            y,
-            cellSize,
-            normalizedValue,
-            interpolateColor(
-              1,
-              visualizationStore.settings.minColor,
-              visualizationStore.settings.maxColor,
-            ),
-            cellColor,
-          )
-          break
+    case 'dual-bar-charts':
+      drawDualBarChartsCell(
+        ctx,
+        x,
+        y,
+        cellSize,
+        normalizedValue,
+        interpolateColor(
+          1,
+          visualizationStore.settings.minColor,
+          visualizationStore.settings.maxColor,
+        ),
+        cellColor,
+      )
+      break
 
-        case 'dual-bar-charts':
-          drawDualBarChartsCell(
-            ctx,
-            x,
-            y,
-            cellSize,
-            normalizedValue,
-            interpolateColor(
-              1,
-              visualizationStore.settings.minColor,
-              visualizationStore.settings.maxColor,
-            ),
-            cellColor,
-          )
-          break
-      }
+    case 'color':
+    default:
+      drawColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+      break
+  }
 
       if (
         interactionStore.hoveredCell &&
