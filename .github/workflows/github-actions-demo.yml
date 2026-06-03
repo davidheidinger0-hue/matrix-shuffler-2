@@ -1,1 +1,59 @@
+name: Deploy Live Demo to GitHub Pages
 
+on:
+  # Triggers on push events to the main branch
+  push:
+    branches: ["main"] 
+
+  # Allows manual run
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one active deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Check out repository code
+        uses: actions/checkout@v4
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18 # Your README says 16+, 18 is a safe, stable modern standard
+          cache: 'pnpm'
+
+      - name: 📥 Install dependencies
+        run: pnpm install
+
+      - name: 🛠️ Build the web application
+        run: pnpm build
+
+      - name: 📤 Upload artifact to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist # Matches the web build output folder from your README
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
