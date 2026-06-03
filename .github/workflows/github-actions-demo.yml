@@ -23,17 +23,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 📦 Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v6
         with:
-          version: 8
+          version: 10
 
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 18 # Your README says 16+, 18 is a safe, stable modern standard
+          node-version: 24
           cache: 'pnpm'
 
       - name: 📥 Install dependencies
@@ -45,7 +45,7 @@ jobs:
       - name: 📤 Upload artifact to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist # Matches the web build output folder from your README
+          path: ./dist
 
   deploy:
     environment:
