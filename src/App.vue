@@ -24,7 +24,6 @@ const colorSchemes = {
   blues: { minColor: '#e3f0fb', maxColor: '#7daee6' },
   reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
   greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
-  viridis: { minColor: '#e0e7f3', maxColor: '#b5e3b5' },
   black: { minColor: '#f0f0f0', maxColor: '#000000' },
 }
 
@@ -291,23 +290,40 @@ const closeHowToUseModal = () => {
           <li class="dropdown">
             <a href="#" class="dropbtn">Encoding</a>
             <div class="dropdown-content">
-              <a href="#" @click.prevent="changeEncoding('circle')">Circles</a>
-              <a href="#" @click.prevent="changeEncoding('color')">Rectangles</a>
-              <a href="#" @click.prevent="changeEncoding('circle-color')">Circle+Color</a>
-              <a href="#" @click.prevent="changeEncoding('color-text')">Color+Text</a>
-              <a href="#" @click.prevent="changeEncoding('dual-bar-charts')">Bertin Dual Bar Charts</a>
-              <a href="#" @click.prevent="changeEncoding('bar-chart')">Bertin Bar Chart</a>
+              <a href="#" @click.prevent="changeEncoding('circle')" class="tooltip-trigger">
+                Circles
+                <span class="tooltip-box">Uses circles to convey values. The larger the circle the higher the value. An empty cell corresponds to the minimum value on the row, a circle filling the cell corresponds to the maximum value.</span>
+              </a>
+              <a href="#" @click.prevent="changeEncoding('color')" class="tooltip-trigger">
+                Gradient
+                <span class="tooltip-box">Uses colour gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value on the row, a cell with the darkest shade corresponds to the maximum value.</span>
+              </a>
+              <a href="#" @click.prevent="changeEncoding('circle-color')" class="tooltip-trigger">
+                Circle + Gradient
+                <span class="tooltip-box">Uses both circles and colour gradients to convey values simultaneously. The larger and darker the circle the higher the value. An empty cell corresponds to the minimum value on the row, a completely filled and darkest circle corresponds to the maximum value.</span>
+              </a>
+              <a href="#" @click.prevent="changeEncoding('color-text')" class="tooltip-trigger">
+                Text + Gradient
+                <span class="tooltip-box">Uses exact numerical text superimposed on colour gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value, while the text displays the exact underlying data.</span>
+              </a>
+              <a href="#" @click.prevent="changeEncoding('dual-bar')" class="tooltip-trigger">
+                Dual Bar Charts
+                <span class="tooltip-box">Uses bar charts with two shades of grey to convey values. A white cell corresponds to the minimum value on the row; a cell filled with hatched lines corresponds to the midpoint value, and a black cell corresponds to the maximum value.</span>
+              </a>
+              <a href="#" @click.prevent="changeEncoding('bar-chart')" class="tooltip-trigger">
+                Bar Chart
+                <span class="tooltip-box">Uses bar charts to convey values. The higher the bar the higher the value. A bar with zero height corresponds to the minimum value on the row, a bar with maximum height corresponds to the maximum value.</span>
+              </a>
             </div>
           </li>
 
           <li class="dropdown">
-            <a href="#" class="dropbtn">Color Scheme</a>
+            <a href="#" class="dropbtn">Colour Scheme</a>
             <div class="dropdown-content">
               <a href="#" @click.prevent="applyColorScheme('black')">Black</a>
               <a href="#" @click.prevent="applyColorScheme('blues')">Blues</a>
               <a href="#" @click.prevent="applyColorScheme('reds')">Reds</a>
               <a href="#" @click.prevent="applyColorScheme('greens')">Greens</a>
-              <a href="#" @click.prevent="applyColorScheme('viridis')">Viridis</a>
             </div>
           </li>
 
@@ -871,5 +887,55 @@ const closeHowToUseModal = () => {
 
 .load-example-btn:hover {
   background-color: var(--color-primary);
+}
+</style>
+
+<style scoped>
+.tooltip-trigger {
+  position: relative;
+}
+
+.tooltip-trigger .tooltip-box {
+  visibility: hidden;
+  width: 250px;
+  background-color: #3c7add;
+  color: #ffffff;
+  text-align: left;
+  border-radius: 0;
+  padding: 12px;
+  position: absolute;
+  z-index: 1000;
+
+  top: 0;
+  left: 100%;
+  margin-left: 5px;
+
+  font-size: 0.85rem;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateX(-5px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  white-space: normal;
+
+  pointer-events: none;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+  border: none;
+}
+
+.tooltip-trigger .tooltip-box::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  right: 100%;
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #3c7add transparent transparent;
+}
+
+.dropdown-content a:hover.tooltip-trigger .tooltip-box {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0);
 }
 </style>
