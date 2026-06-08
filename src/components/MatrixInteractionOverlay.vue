@@ -7,18 +7,28 @@ const visualizationStore = useVisualizationStore()
 const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 
-const topPadding = 140
+const minTopPadding = 140
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
 
 const getLeftPadding = () => {
   const matrix = datasetStore.currentMatrix
-  if (!matrix) return 260
+  if (!matrix) return 120
 
   const fontSize = visualizationStore.config.labelSize || 14
   const longestLabelLength = Math.max(...matrix.rowNames.map((name) => name.length))
 
   return Math.max(120, longestLabelLength * fontSize * 0.6 + 30)
+}
+
+const getTopPadding = () => {
+  const matrix = datasetStore.currentMatrix
+  if (!matrix) return minTopPadding
+
+  const fontSize = visualizationStore.config.labelSize || 14
+  const longestLabelLength = Math.max(...matrix.columnNames.map((name) => name.length))
+
+  return Math.max(minTopPadding, longestLabelLength * fontSize * 0.6 + 30)
 }
 
 const getMousePosition = (event: MouseEvent) => {
@@ -37,6 +47,7 @@ const updateHoverState = (x: number, y: number) => {
 
   const cellSize = getCellSize()
   const leftPadding = getLeftPadding()
+  const topPadding = getTopPadding()
 
   const col = Math.floor((x - leftPadding) / cellSize)
   const row = Math.floor((y - topPadding) / cellSize)
@@ -83,6 +94,7 @@ const handleMouseMove = (event: MouseEvent) => {
 
   const cellSize = getCellSize()
   const leftPadding = getLeftPadding()
+  const topPadding = getTopPadding()
   const pos = getMousePosition(event)
 
   interactionStore.mousePosition = pos

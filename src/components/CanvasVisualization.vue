@@ -11,8 +11,7 @@ const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 const visualizationStore = useVisualizationStore()
 
-//const leftPadding = 260
-const topPadding = 140
+const minTopPadding = 140
 const rowLabelMargin = 20
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
@@ -213,25 +212,26 @@ const drawMatrix = () => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-
   ctx.font = `${visualizationStore.config.labelSize}px Arial`
   ctx.textBaseline = 'middle'
 
-  // Dynamically determine how much space the row labels need
-  const longestLabelWidth = Math.max(
-    ...matrix.rowNames.map(name => ctx.measureText(name).width),
+  const longestRowLabelWidth = Math.max(
+    ...matrix.rowNames.map((name) => ctx.measureText(name).width),
   )
 
-  //const leftPadding = longestLabelWidth + 30
-  const leftPadding = Math.max(120, longestLabelWidth + 30)
+  const longestColumnLabelWidth = Math.max(
+    ...matrix.columnNames.map((name) => ctx.measureText(name).width),
+  )
+
+  const leftPadding = Math.max(120, longestRowLabelWidth + 30)
+  const dynamicTopPadding = Math.max(minTopPadding, longestColumnLabelWidth * 0.75 + 40)//+ 30)
+
   canvas.width = leftPadding + matrix.columnNames.length * cellSize + 80
-  canvas.height = topPadding + matrix.rowNames.length * cellSize + 80
+  canvas.height = dynamicTopPadding + matrix.rowNames.length * cellSize + 80
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  //restore font settings after resizing
+
+  // Canvas resets context state after resizing, so restore font settings.
   ctx.font = `${visualizationStore.config.labelSize}px Arial`
   ctx.textBaseline = 'middle'
 
@@ -250,16 +250,26 @@ const drawMatrix = () => {
       ctx.strokeStyle = isDragged ? '#1f6feb' : '#999'
       ctx.lineWidth = isDragged ? 3 : 2
       ctx.beginPath()
-      ctx.moveTo(x, topPadding - 5)
-      ctx.lineTo(x + cellSize - 2, topPadding - 5)
+      ctx.moveTo(x, dynamicTopPadding - 5)
+      ctx.lineTo(x + cellSize - 2, dynamicTopPadding - 5)
       ctx.stroke()
     }
 
-    ctx.save()
-    ctx.translate(x + cellSize / 2, topPadding - 35)
+    /*ctx.save()
+    ctx.translate(x + cellSize / 2, dynamicTopPadding - 15)
     ctx.rotate((-getLabelRotation() * Math.PI) / 180)
     ctx.fillStyle = 'black'
     ctx.textAlign = 'center'
+    ctx.fillText(name, 0, 0)
+    ctx.restore()
+    */
+
+    ctx.save()
+    ctx.translate(x + cellSize / 2, dynamicTopPadding - 10)
+    ctx.rotate((-getLabelRotation() * Math.PI) / 180)
+    ctx.fillStyle = 'black'
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
     ctx.fillText(name, 0, 0)
     ctx.restore()
   })
@@ -273,7 +283,7 @@ const drawMatrix = () => {
       interactionStore.dragState?.type === 'row' &&
       interactionStore.dragState.fromIndex === rowIndex
 
-    const y = topPadding + rowIndex * cellSize
+    const y = dynamicTopPadding + rowIndex * cellSize
 
     if (isHovered || isDragged) {
       ctx.strokeStyle = isDragged ? '#1f6feb' : '#999'
@@ -300,7 +310,7 @@ const drawMatrix = () => {
       const normalizedValue = Math.min(1, Math.max(0, value))
 
       const x = leftPadding + colIndex * cellSize
-      const y = topPadding + rowIndex * cellSize
+      const y = dynamicTopPadding + rowIndex * cellSize
 
       const cellColor = interpolateColor(
         normalizedValue,
@@ -384,7 +394,7 @@ const drawMatrix = () => {
     ctx.lineWidth = 3
 
     if (interactionStore.dragState.type === 'row') {
-      const y = topPadding + interactionStore.dragTargetIndex * cellSize
+      const y = dynamicTopPadding + interactionStore.dragTargetIndex * cellSize
       ctx.beginPath()
       ctx.moveTo(leftPadding, y)
       ctx.lineTo(leftPadding + matrix.columnNames.length * cellSize, y)
@@ -394,8 +404,8 @@ const drawMatrix = () => {
     if (interactionStore.dragState.type === 'column') {
       const x = leftPadding + interactionStore.dragTargetIndex * cellSize
       ctx.beginPath()
-      ctx.moveTo(x, topPadding)
-      ctx.lineTo(x, topPadding + matrix.rowNames.length * cellSize)
+      ctx.moveTo(x, dynamicTopPadding)
+      ctx.lineTo(x, dynamicTopPadding + matrix.rowNames.length * cellSize)
       ctx.stroke()
     }
   }
