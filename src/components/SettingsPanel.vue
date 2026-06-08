@@ -6,7 +6,7 @@
 
     <div class="panel-content" v-show="isOpen">
       <div class="setting-group">
-        <h3 class="settings-heading">Normalization</h3>
+        <h3 class="settings-heading">Normalisation</h3>
         <div class="radio-group">
           <label>
             <input
@@ -91,15 +91,15 @@
       </div>
 
       <div class="setting-group">
-        <h3 class="settings-heading">Visualization Colors</h3>
+        <h3 class="settings-heading">Visualisation Colours</h3>
         <div class="color-inputs">
           <div class="color-input-group">
-            <label>Min Color:</label>
+            <label>Min Colour:</label>
             <input type="color" v-model="localSettings.minColor" @change="applySettings" />
             <span class="color-preview" :style="{ backgroundColor: localSettings.minColor }"></span>
           </div>
           <div class="color-input-group">
-            <label>Max Color:</label>
+            <label>Max Colour:</label>
             <input type="color" v-model="localSettings.maxColor" @change="applySettings" />
             <span class="color-preview" :style="{ backgroundColor: localSettings.maxColor }"></span>
           </div>
@@ -196,7 +196,7 @@
               >{{ datasetStore.rowNames.length }} rows ×
               {{ datasetStore.columnNames.length }} columns</span
             >
-            <span>Normalization: {{ datasetStore.normalizationType }}</span>
+            <span>Normalisation: {{ datasetStore.normalizationType }}</span>
           </div>
         </div>
       </div>
@@ -316,7 +316,6 @@ onMounted(() => {
 
 <style scoped>
 .settings-heading {
-  text-transform: uppercase;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.6px;

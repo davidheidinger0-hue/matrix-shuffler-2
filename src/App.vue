@@ -297,19 +297,19 @@ const closeHowToUseModal = () => {
               </a>
               <a href="#" @click.prevent="changeEncoding('color')" class="tooltip-trigger">
                 Gradient
-                <span class="tooltip-box">Uses color gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value on the row, a cell with the darkest shade corresponds to the maximum value.</span>
+                <span class="tooltip-box">Uses colour gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value on the row, a cell with the darkest shade corresponds to the maximum value.</span>
               </a>
               <a href="#" @click.prevent="changeEncoding('circle-color')" class="tooltip-trigger">
                 Circle + Gradient
-                <span class="tooltip-box">Uses both circles and color gradients to convey values simultaneously. The larger and darker the circle and the cell the higher the value. An empty cell corresponds to the minimum value on the row, a completely filled and darkest circle corresponds to the maximum value.</span>
+                <span class="tooltip-box">Uses both circles and colour gradients to convey values simultaneously. The larger and darker the circle the higher the value. An empty cell corresponds to the minimum value on the row, a completely filled and darkest circle corresponds to the maximum value.</span>
               </a>
               <a href="#" @click.prevent="changeEncoding('color-text')" class="tooltip-trigger">
                 Text + Gradient
-                <span class="tooltip-box">Uses exact numerical text superimposed on color gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value, while the text displays the exact underlying data.</span>
+                <span class="tooltip-box">Uses exact numerical text superimposed on colour gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value, while the text displays the exact underlying data.</span>
               </a>
               <a href="#" @click.prevent="changeEncoding('dual-bar')" class="tooltip-trigger">
                 Dual Bar Charts
-                <span class="tooltip-box">Uses bar charts with two shades of gray to convey values. A white cell corresponds to the minimum value on the row; a cell filled with hatched lines corresponds to the midpoint value, and a black cell corresponds to the maximum value.</span>
+                <span class="tooltip-box">Uses bar charts with two shades of grey to convey values. A white cell corresponds to the minimum value on the row; a cell filled with hatched lines corresponds to the midpoint value, and a black cell corresponds to the maximum value.</span>
               </a>
               <a href="#" @click.prevent="changeEncoding('bar-chart')" class="tooltip-trigger">
                 Bar Chart
@@ -319,7 +319,7 @@ const closeHowToUseModal = () => {
           </li>
 
           <li class="dropdown">
-            <a href="#" class="dropbtn">Color Scheme</a>
+            <a href="#" class="dropbtn">Colour Scheme</a>
             <div class="dropdown-content">
               <a href="#" @click.prevent="applyColorScheme('black')">Black</a>
               <a href="#" @click.prevent="applyColorScheme('blues')">Blues</a>
