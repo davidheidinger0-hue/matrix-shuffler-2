@@ -24,7 +24,6 @@ const colorSchemes = {
   blues: { minColor: '#e3f0fb', maxColor: '#7daee6' },
   reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
   greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
-  viridis: { minColor: '#e0e7f3', maxColor: '#b5e3b5' },
   black: { minColor: '#f0f0f0', maxColor: '#000000' },
 }
 
@@ -325,7 +324,6 @@ const closeHowToUseModal = () => {
               <a href="#" @click.prevent="applyColorScheme('blues')">Blues</a>
               <a href="#" @click.prevent="applyColorScheme('reds')">Reds</a>
               <a href="#" @click.prevent="applyColorScheme('greens')">Greens</a>
-              <a href="#" @click.prevent="applyColorScheme('viridis')">Viridis</a>
             </div>
           </li>
 
