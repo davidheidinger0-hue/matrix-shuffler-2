@@ -232,7 +232,6 @@ const colorSchemes = {
   blues: { minColor: '#e3f0fb', maxColor: '#7daee6' },
   reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
   greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
-  viridis: { minColor: '#e0e7f3', maxColor: '#b5e3b5' },
 }
 
 const applySettings = () => {
@@ -246,12 +245,12 @@ const applySettings = () => {
   }
 }
 
-const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
-  localSettings.colorScheme = scheme
-  localSettings.minColor = colorSchemes[scheme].minColor
-  localSettings.maxColor = colorSchemes[scheme].maxColor
-  applySettings()
-}
+//const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
+//  localSettings.colorScheme = scheme
+//  localSettings.minColor = colorSchemes[scheme].minColor
+//  localSettings.maxColor = colorSchemes[scheme].maxColor
+//  applySettings()
+//}
 
 const resetSettings = () => {
   localSettings.colorScheme = 'blues'
