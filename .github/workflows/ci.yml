@@ -66,6 +66,5 @@ jobs:
         with:
           name: matrix-shuffler-${{ matrix.platform }}
           path: |
-            src-tauri/target/release/matrix-shuffler.exe
-            src-tauri/target/release/matrix-shuffler
-          if-no-files-found: ignore
+            src-tauri/target/release/matrix-shuffler*
+          if-no-files-found: warning
