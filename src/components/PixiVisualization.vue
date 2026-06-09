@@ -848,15 +848,16 @@ const centerContainer = (container: Container) => {
 
   container.scale.set(scale)
 
-  const scaledWidth = container.width * scale
-  const scaledHeight = container.height * scale
+  // Scaling changed for better view of larger datasets
+  // const scaledWidth = container.width * scale
+  // const scaledHeight = container.height * scale
 
   container.x = 20
   container.y = 20
 
-// Centering logic was removed to keep the top-left corner fixed during resizing
-//  container.x = (app.value.screen.width - scaledWidth) / 2
-//  container.y = (app.value.screen.height - scaledHeight) / 2
+  // Centering logic was removed to keep the top-left corner fixed during resizing
+  //  container.x = (app.value.screen.width - scaledWidth) / 2
+  //  container.y = (app.value.screen.height - scaledHeight) / 2
 
 }
 
