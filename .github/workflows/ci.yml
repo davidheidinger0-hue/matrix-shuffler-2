@@ -59,3 +59,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: --no-bundle --verbose
+
+# --- ADDED THIS TO SAVE THE FILES ---
+      - name: Save built application
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-shuffler-${{ matrix.platform }}
+          path: |
+            src-tauri/target/release/matrix-shuffler.exe
+            src-tauri/target/release/matrix-shuffler
+          if-no-files-found: ignore
