@@ -228,11 +228,11 @@ const localSettings = reactive<VisualizationSettings>({
   cellSize: 40,
 })
 
-const colorSchemes = {
-  blues: { minColor: '#e3f0fb', maxColor: '#7daee6' },
-  reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
-  greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
-}
+//const colorSchemes = {
+//  blues: { minColor: '#e3f0fb', maxColor: '#7daee6' },
+//  reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
+//  greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
+//}
 
 const applySettings = () => {
   visualizationStore.updateSettings(localSettings)
