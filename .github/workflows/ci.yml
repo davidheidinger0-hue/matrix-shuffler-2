@@ -67,4 +67,4 @@ jobs:
           name: matrix-shuffler-${{ matrix.platform }}
           path: |
             src-tauri/target/release/matrix-shuffler*
-          if-no-files-found: warning
+          if-no-files-found: error
