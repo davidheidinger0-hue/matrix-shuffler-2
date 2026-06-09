@@ -149,16 +149,16 @@ const handleCSVImport = (event: Event) => {
 
 const exampleDatasets = [
   { name: 'appropriateness.csv', path: './examples/appropriateness.csv' },
-  { name: 'bertin-hotel.csv', path: './examples/bertin_hotel.csv' },
-  { name: 'bertin-navy.csv', path: './examples/bertin_navy.csv' },
-  { name: 'bertin-towns.csv', path: './examples/bertin_towns.csv' },
+  { name: 'bertin-hotel.csv', path: './examples/bertin-hotel.csv' },
+  { name: 'bertin-navy.csv', path: './examples/bertin-navy.csv' },
+  { name: 'bertin-towns.csv', path: './examples/bertin-towns.csv' },
   { name: 'cereal.csv', path: './examples/cereal.csv' },
-  { name: 'european-values.csv', path: './examples/european_values.csv' },
-  { name: 'motor_trend_cars', path: './examples/motor_trend_cars.csv' },
-  { name: 'sample-data.csv', path: './examples/sample_data.csv' },
-  { name: 'test-data.csv', path: './examples/test_data.csv' },
-  { name: 'wholesale_customers_data', path: './examples/wholesale_customers_data.csv' },
-  { name: 'wine_analysis.csv', path: './examples/wine_analysis.csv' },
+  { name: 'european-values.csv', path: './examples/european-values.csv' },
+  { name: 'motor-trend-cars', path: './examples/motor-trend-cars.csv' },
+  { name: 'sample-data.csv', path: './examples/sample-data.csv' },
+  { name: 'test-data.csv', path: './examples/test-data.csv' },
+  { name: 'wholesale-customers-data', path: './examples/wholesale-customers-data.csv' },
+  { name: 'wine-analysis.csv', path: './examples/wine-analysis.csv' },
   { name: 'zoo.csv', path: './examples/zoo.csv' },
 ]
 
