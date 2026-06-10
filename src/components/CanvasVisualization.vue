@@ -4,8 +4,10 @@ import { useDatasetStore } from '@/stores/dataset'
 import { useInteractionStore } from '@/stores/interaction'
 import { useVisualizationStore } from '@/stores/visualization'
 import MatrixInteractionOverlay from './MatrixInteractionOverlay.vue'
+import Minimap from './Minimap.vue'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
+const wrapperRef = ref<HTMLDivElement | null>(null)
 
 const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
@@ -429,36 +431,50 @@ watch(
 </script>
 
 <template>
-  <div class="canvas-wrapper">
-    <canvas ref="canvasRef"></canvas>
-
-    <MatrixInteractionOverlay />
-
+  <div class="visualization-container">
     <div
-      v-if="interactionStore.hoveredCell && datasetStore.currentMatrix"
-      class="tooltip"
-      :style="{
-        left: interactionStore.mousePosition.x + 16 + 'px',
-        top: interactionStore.mousePosition.y + 16 + 'px',
-      }"
+      ref="wrapperRef"
+      class="canvas-wrapper"
     >
-      <strong>
-        {{ datasetStore.currentMatrix.rowNames[interactionStore.hoveredCell.row] }}
-        ×
-        {{ datasetStore.currentMatrix.columnNames[interactionStore.hoveredCell.col] }}
-      </strong>
-      <br />
-      Value:
-      {{
-        datasetStore.currentMatrix.values[interactionStore.hoveredCell.row][
-          interactionStore.hoveredCell.col
-        ].initialValue
-      }}
+      <canvas ref="canvasRef"></canvas>
+
+      <MatrixInteractionOverlay />
+
+      <div
+        v-if="interactionStore.hoveredCell && datasetStore.currentMatrix"
+        class="tooltip"
+        :style="{
+          left: interactionStore.mousePosition.x + 16 + 'px',
+          top: interactionStore.mousePosition.y + 16 + 'px',
+        }"
+      >
+        <strong>
+          {{ datasetStore.currentMatrix.rowNames[interactionStore.hoveredCell.row] }}
+          ×
+          {{ datasetStore.currentMatrix.columnNames[interactionStore.hoveredCell.col] }}
+        </strong>
+        <br />
+        Value:
+        {{
+          datasetStore.currentMatrix.values[interactionStore.hoveredCell.row][
+            interactionStore.hoveredCell.col
+          ].initialValue
+        }}
+      </div>
     </div>
+    <Minimap
+      :wrapper="wrapperRef"
+      :canvas="canvasRef"
+    />
   </div>
 </template>
 
 <style scoped>
+.visualization-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
 .canvas-wrapper {
   position: relative;
   width: 100%;
