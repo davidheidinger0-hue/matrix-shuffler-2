@@ -359,7 +359,7 @@ const closeHowToUseModal = () => {
               :class="{ 'panel-open': showDataTablePanel }"
               :style="showDataTablePanel ? `left: ${dataTablePanelWidth}px;` : 'left: 0;'"
             >
-              🗂️
+              {{ showDataTablePanel ? '❮' : '❯' }}
             </button>
             <transition name="slide-side-panel">
               <div
@@ -411,7 +411,7 @@ const closeHowToUseModal = () => {
           :class="{ 'panel-open': showSettingsPanel }"
           :style="showSettingsPanel ? 'right: 360px;' : 'right: 0;'"
         >
-          ⚙️
+          {{ showSettingsPanel ? '❯' : '❮' }}
         </button>
         <transition name="slide-side-panel">
           <div v-if="showSettingsPanel" class="side-panel">
