@@ -65,8 +65,8 @@ const drawCircleCell = (
   normalizedValue: number,
   cellColor: string,
 ) => {
-  ctx.strokeStyle = cellColor
-  ctx.lineWidth = 1
+  ctx.strokeStyle = '#333333'
+  ctx.lineWidth = 0.05
   ctx.strokeRect(x, y, cellSize - 2, cellSize - 2)
 
   ctx.beginPath()
