@@ -1,7 +1,7 @@
 import type { MatrixData } from '@/stores/dataset'
 
 interface SvgGenOptions {
-  encoding: 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart'
+  encoding: 'circle' | 'color' | 'circle-color' | 'color-text' | 'hatched-bar-charts' | 'bar-chart'
   cellSize: number
   cellSpacing: number
   labelRotation: number
@@ -128,23 +128,23 @@ export function generateMatrixSVG(
       const norm = (val - min) / (max - min)
       const x = labelPadX + j * (cellSize + cellSpacing)
       const y = labelPadY + i * (cellSize + cellSpacing)
+
+      const gridStroke = '#e0e0e0'
+      const shapeStroke = '#444444'
+
       if (encoding === 'circle') {
-        const r = (cellSize / 2) * norm // shrink max radius for padding
-        const borderColor = getColor(norm)
-        svg += `  <rect x='${x}' y='${y}' width='${cellSize}' height='${cellSize}' fill='white' fill-opacity='1' stroke='${borderColor}' />\n`
-        svg += `  <circle cx='${x + cellSize / 2}' cy='${y + cellSize / 2}' r='${r}' fill='${getColor(norm)}' fill-opacity='${norm}' stroke='${borderColor}' />\n`
+        const r = (cellSize / 2) * norm
+        svg += `  <rect x='${x}' y='${y}' width='${cellSize}' height='${cellSize}' fill='white' fill-opacity='1' stroke='${gridStroke}' />\n`
+        svg += `  <circle cx='${x + cellSize / 2}' cy='${y + cellSize / 2}' r='${r}' fill='${getColor(norm)}' fill-opacity='${norm}' stroke='${shapeStroke}' />\n`
       } else if (encoding === 'color') {
-        const borderColor = getColor(norm)
-        svg += `  <rect x='${x}' y='${y}' width='${cellSize}' height='${cellSize}' fill='${getColor(norm)}' fill-opacity='${norm}' stroke='${borderColor}' />\n`
+        svg += `  <rect x='${x}' y='${y}' width='${cellSize}' height='${cellSize}' fill='${getColor(norm)}' fill-opacity='${norm}' stroke='${gridStroke}' />\n`
       } else if (encoding === 'color-text') {
-        const borderColor = getColor(norm)
-        svg += `  <rect x='${x}' y='${y}' width='${cellSize}' height='${cellSize}' fill='${getColor(norm)}' fill-opacity='${norm}' stroke='${borderColor}' />\n`
+        svg += `  <rect x='${x}' y='${y}' width='${cellSize}' height='${cellSize}' fill='${getColor(norm)}' fill-opacity='${norm}' stroke='${gridStroke}' />\n`
         svg += `  <text x='${x + cellSize / 2}' y='${y + cellSize / 2 + fontSize * 0.35}' text-anchor='middle' dominant-baseline='middle' fill='#222'>${cell.initialValue}</text>\n`
       } else if (encoding === 'circle-color') {
         const r = (cellSize / 2) * norm
-        const borderColor = getColor(norm)
-        svg += `  <rect x='${x}' y='${y}' width='${cellSize}' height='${cellSize}' fill='white' fill-opacity='1' stroke='${borderColor}' />\n`
-        svg += `  <circle cx='${x + cellSize / 2}' cy='${y + cellSize / 2}' r='${r}' fill='${getColor(norm)}' fill-opacity='${norm}' stroke='${borderColor}' />\n`
+        svg += `  <rect x='${x}' y='${y}' width='${cellSize}' height='${cellSize}' fill='white' fill-opacity='1' stroke='${gridStroke}' />\n`
+        svg += `  <circle cx='${x + cellSize / 2}' cy='${y + cellSize / 2}' r='${r}' fill='${getColor(norm)}' fill-opacity='${norm}' stroke='${shapeStroke}' />\n`
       }
     }
   }

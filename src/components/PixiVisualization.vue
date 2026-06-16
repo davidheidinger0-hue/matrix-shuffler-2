@@ -619,7 +619,7 @@ const createCell = (
 
     const alpha = Math.max(0, Math.min(1, normalizedValue)) // Clamp alpha between 0 and 1
 
-    const encoding: 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart' =
+    const encoding: 'circle' | 'color' | 'circle-color' | 'color-text' | 'hatched-bar-charts' | 'bar-chart' =
       visualizationStore.config.encoding
 
     switch (encoding) {
@@ -635,8 +635,8 @@ const createCell = (
       case 'circle-color':
         createCircleColor(cell, rect, initialValue, alpha, cellSize, normalizedValue)
         break
-      case 'dual-bar-charts':
-        createDualBarChartsCell(cell, rect, initialValue, cellSize, normalizedValue)
+      case 'hatched-bar-charts':
+        createHatchedBarChartsCell(cell, rect, initialValue, cellSize, normalizedValue)
         break
       case 'bar-chart':
         createBarChartCell(cell, rect, initialValue, cellSize, normalizedValue)
@@ -684,7 +684,7 @@ const createCircleCell = (
   cell.addChild(rect)
 }
 
-const createDualBarChartsCell = (
+const createHatchedBarChartsCell = (
   cell: Container,
   rect: Graphics,
   value: number,

@@ -61,9 +61,6 @@
           />
         </label>
         <div class="rotation-controls">
-          <button @click="setOptimalRotation" class="btn-auto" v-if="datasetStore.hasData">
-            Auto (Optimal)
-          </button>
           <button @click="setRotation(0)" class="btn-preset">0°</button>
           <button @click="setRotation(45)" class="btn-preset">45°</button>
           <button @click="setRotation(90)" class="btn-preset">90°</button>
@@ -205,7 +202,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useVisualizationStore, type VisualizationSettings } from '@/stores/visualization'
 import { useDatasetStore, type SortMethod, type SortDirection } from '@/stores/dataset'
 
@@ -282,13 +279,6 @@ const sortColumnsBySimilarity = () => {
   datasetStore.sortColumnsBySimilarity(selectedColIndex.value, selectedDirection.value)
 }
 
-const setOptimalRotation = () => {
-  if (datasetStore.hasData && datasetStore.columnNames.length > 0) {
-    visualizationStore.calculateAndSetOptimalLabelRotation(datasetStore.columnNames)
-    localSettings.labelRotation = visualizationStore.settings.labelRotation
-  }
-}
-
 const setRotation = (rotation: number) => {
   localSettings.labelRotation = rotation
   applySettings()
@@ -297,9 +287,6 @@ const setRotation = (rotation: number) => {
 const applyCellSizeSettings = () => {
   const cellSize = Number(localSettings.cellSize)
   visualizationStore.setMatrixCellDimension(cellSize)
-  if (datasetStore.hasData && datasetStore.columnNames.length > 0) {
-    visualizationStore.calculateAndSetOptimalLabelRotation(datasetStore.columnNames, cellSize)
-  }
   applySettings()
 }
 
@@ -307,6 +294,13 @@ const setCellSize = (size: number) => {
   localSettings.cellSize = size
   applyCellSizeSettings()
 }
+
+watch(
+  () => visualizationStore.settings.labelRotation,
+  (newRotation) => {
+    localSettings.labelRotation = newRotation
+  }
+)
 
 onMounted(() => {
   Object.assign(localSettings, visualizationStore.settings)
@@ -595,7 +589,6 @@ onMounted(() => {
   gap: 8px;
 }
 
-.btn-auto,
 .btn-preset {
   padding: 6px 12px;
   border: 1px solid var(--color-border);

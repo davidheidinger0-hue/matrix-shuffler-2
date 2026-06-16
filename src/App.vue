@@ -36,7 +36,7 @@ const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
 }
 
 const changeEncoding = (encoding: string) => {
-  visualizationStore.setEncoding(encoding as 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart')
+  visualizationStore.setEncoding(encoding as 'circle' | 'color' | 'circle-color' | 'color-text' | 'hatched-bar-charts' | 'bar-chart')
 }
 
 const handleImportData = () => {
@@ -290,27 +290,27 @@ const closeHowToUseModal = () => {
           <li class="dropdown">
             <a href="#" class="dropbtn">Encoding</a>
             <div class="dropdown-content">
-              <a href="#" @click.prevent="changeEncoding('circle')" class="tooltip-trigger">
+              <a href="#" @click.prevent="changeEncoding('circle')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'circle' }">
                 Circles
                 <span class="tooltip-box">Uses circles to convey values. The larger the circle the higher the value. An empty cell corresponds to the minimum value on the row, a circle filling the cell corresponds to the maximum value.</span>
               </a>
-              <a href="#" @click.prevent="changeEncoding('color')" class="tooltip-trigger">
+              <a href="#" @click.prevent="changeEncoding('color')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'color' }">
                 Gradient
                 <span class="tooltip-box">Uses colour gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value on the row, a cell with the darkest shade corresponds to the maximum value.</span>
               </a>
-              <a href="#" @click.prevent="changeEncoding('circle-color')" class="tooltip-trigger">
+              <a href="#" @click.prevent="changeEncoding('circle-color')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'circle-color' }">
                 Circle + Gradient
                 <span class="tooltip-box">Uses both circles and colour gradients to convey values simultaneously. The larger and darker the circle the higher the value. An empty cell corresponds to the minimum value on the row, a completely filled and darkest circle corresponds to the maximum value.</span>
               </a>
-              <a href="#" @click.prevent="changeEncoding('color-text')" class="tooltip-trigger">
+              <a href="#" @click.prevent="changeEncoding('color-text')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'color-text' }">
                 Text + Gradient
                 <span class="tooltip-box">Uses exact numerical text superimposed on colour gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value, while the text displays the exact underlying data.</span>
               </a>
-              <a href="#" @click.prevent="changeEncoding('dual-bar')" class="tooltip-trigger">
-                Dual Bar Charts
-                <span class="tooltip-box">Uses bar charts with two shades of grey to convey values. A white cell corresponds to the minimum value on the row; a cell filled with hatched lines corresponds to the midpoint value, and a black cell corresponds to the maximum value.</span>
+              <a href="#" @click.prevent="changeEncoding('hatched-bar-charts')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'hatched-bar-charts' }">
+                Hatched Bar Charts
+                <span class="tooltip-box">Uses bar charts with hatched lines to convey values. A white cell corresponds to the minimum value on the row; a cell filled with hatched lines corresponds to the midpoint value, and a black cell corresponds to the maximum value.</span>
               </a>
-              <a href="#" @click.prevent="changeEncoding('bar-chart')" class="tooltip-trigger">
+              <a href="#" @click.prevent="changeEncoding('bar-chart')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'bar-chart' }">
                 Bar Chart
                 <span class="tooltip-box">Uses bar charts to convey values. The higher the bar the higher the value. A bar with zero height corresponds to the minimum value on the row, a bar with maximum height corresponds to the maximum value.</span>
               </a>
@@ -320,10 +320,10 @@ const closeHowToUseModal = () => {
           <li class="dropdown">
             <a href="#" class="dropbtn">Colour Scheme</a>
             <div class="dropdown-content">
-              <a href="#" @click.prevent="applyColorScheme('black')">Black</a>
-              <a href="#" @click.prevent="applyColorScheme('blues')">Blues</a>
-              <a href="#" @click.prevent="applyColorScheme('reds')">Reds</a>
-              <a href="#" @click.prevent="applyColorScheme('greens')">Greens</a>
+              <a href="#" @click.prevent="applyColorScheme('black')" :class="{ 'active-check': visualizationStore.settings.colorScheme === 'black' }">Black</a>
+              <a href="#" @click.prevent="applyColorScheme('blues')" :class="{ 'active-check': visualizationStore.settings.colorScheme === 'blues' }">Blues</a>
+              <a href="#" @click.prevent="applyColorScheme('reds')" :class="{ 'active-check': visualizationStore.settings.colorScheme === 'reds' }">Reds</a>
+              <a href="#" @click.prevent="applyColorScheme('greens')" :class="{ 'active-check': visualizationStore.settings.colorScheme === 'greens' }">Greens</a>
             </div>
           </li>
 
@@ -359,7 +359,7 @@ const closeHowToUseModal = () => {
               :class="{ 'panel-open': showDataTablePanel }"
               :style="showDataTablePanel ? `left: ${dataTablePanelWidth}px;` : 'left: 0;'"
             >
-              🗂️
+              {{ showDataTablePanel ? '❮' : '❯' }}
             </button>
             <transition name="slide-side-panel">
               <div
@@ -411,7 +411,7 @@ const closeHowToUseModal = () => {
           :class="{ 'panel-open': showSettingsPanel }"
           :style="showSettingsPanel ? 'right: 360px;' : 'right: 0;'"
         >
-          ⚙️
+          {{ showSettingsPanel ? '❯' : '❮' }}
         </button>
         <transition name="slide-side-panel">
           <div v-if="showSettingsPanel" class="side-panel">
@@ -599,6 +599,7 @@ const closeHowToUseModal = () => {
   text-decoration: none;
   display: block;
   text-align: left;
+  white-space: nowrap;
 }
 
 /* Change color of dropdown links on hover */
@@ -887,6 +888,17 @@ const closeHowToUseModal = () => {
 
 .load-example-btn:hover {
   background-color: var(--color-primary);
+}
+
+.dropdown-content a::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  font-weight: bold;
+}
+
+.dropdown-content a.active-check::before {
+  content: '✓';
 }
 </style>
 

@@ -1,7 +1,8 @@
 # Matrix Shuffler 2
 
-A web application for matrix reordering.
-We build onto the orignal Matrix Shuffler: https://github.com/AndrejKnaus/matrix-shuffler
+A web application for matrix reordering. 
+
+*This project builds upon the original [Matrix Shuffler](https://github.com/AndrejKnaus/matrix-shuffler) by Esma Karic, Andrej Knaus, and Laura Thaçi.*
 
 ## Prerequisites
 
@@ -131,3 +132,10 @@ This project uses TypeScript with Vue. For proper type checking:
 ## Configuration
 
 For customizing the build configuration, see the [Vite Configuration Reference](https://vite.dev/config/).
+
+## Acknowledgements
+
+We thank the original authors of the Matrix Shuffler repository for the basis, for our version 2 of the project: 
+* Esma Karic
+* Andrej Knaus
+* Laura Thaçi
