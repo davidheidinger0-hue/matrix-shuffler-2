@@ -202,7 +202,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useVisualizationStore, type VisualizationSettings } from '@/stores/visualization'
 import { useDatasetStore, type SortMethod, type SortDirection } from '@/stores/dataset'
 
@@ -294,6 +294,13 @@ const setCellSize = (size: number) => {
   localSettings.cellSize = size
   applyCellSizeSettings()
 }
+
+watch(
+  () => visualizationStore.settings.labelRotation,
+  (newRotation) => {
+    localSettings.labelRotation = newRotation
+  }
+)
 
 onMounted(() => {
   Object.assign(localSettings, visualizationStore.settings)
