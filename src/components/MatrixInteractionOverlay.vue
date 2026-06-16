@@ -2,33 +2,23 @@
 import { useDatasetStore } from '@/stores/dataset'
 import { useInteractionStore } from '@/stores/interaction'
 import { useVisualizationStore } from '@/stores/visualization'
+import { getMatrixLayout } from '@/utils/matrixLayout'
 
 const visualizationStore = useVisualizationStore()
 const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 
-const minTopPadding = 140
-
 const getCellSize = () => visualizationStore.settings.cellSize || 40
 
-const getLeftPadding = () => {
+const getCurrentLayout = () => {
   const matrix = datasetStore.currentMatrix
-  if (!matrix) return 120
+  if (!matrix) return null
 
-  const fontSize = visualizationStore.config.labelSize || 14
-  const longestLabelLength = Math.max(...matrix.rowNames.map((name) => name.length))
-
-  return Math.max(120, longestLabelLength * fontSize * 0.6 + 30)
-}
-
-const getTopPadding = () => {
-  const matrix = datasetStore.currentMatrix
-  if (!matrix) return minTopPadding
-
-  const fontSize = visualizationStore.config.labelSize || 14
-  const longestLabelLength = Math.max(...matrix.columnNames.map((name) => name.length))
-
-  return Math.max(minTopPadding, longestLabelLength * fontSize * 0.6 + 30)
+  return getMatrixLayout({
+    rowNames: matrix.rowNames,
+    columnNames: matrix.columnNames,
+    labelSize: visualizationStore.config.labelSize || 14,
+  })
 }
 
 const getMousePosition = (event: MouseEvent) => {
@@ -43,11 +33,13 @@ const getMousePosition = (event: MouseEvent) => {
 
 const updateHoverState = (x: number, y: number) => {
   const matrix = datasetStore.currentMatrix
-  if (!matrix) return
+  const layout = getCurrentLayout()
+
+  if (!matrix || !layout) return
 
   const cellSize = getCellSize()
-  const leftPadding = getLeftPadding()
-  const topPadding = getTopPadding()
+  const leftPadding = layout.leftPadding
+  const topPadding = layout.topPadding
 
   const col = Math.floor((x - leftPadding) / cellSize)
   const row = Math.floor((y - topPadding) / cellSize)
@@ -90,11 +82,11 @@ const updateHoverState = (x: number, y: number) => {
 
 const handleMouseMove = (event: MouseEvent) => {
   const matrix = datasetStore.currentMatrix
-  if (!matrix) return
+  const layout = getCurrentLayout()
+
+  if (!matrix || !layout) return
 
   const cellSize = getCellSize()
-  const leftPadding = getLeftPadding()
-  const topPadding = getTopPadding()
   const pos = getMousePosition(event)
 
   interactionStore.mousePosition = pos
@@ -102,13 +94,21 @@ const handleMouseMove = (event: MouseEvent) => {
   updateHoverState(pos.x, pos.y)
 
   if (interactionStore.dragState?.type === 'row') {
-    const target = Math.round((pos.y - topPadding) / cellSize)
-    interactionStore.dragTargetIndex = Math.max(0, Math.min(matrix.rowNames.length, target))
+    const target = Math.round((pos.y - layout.topPadding) / cellSize)
+
+    interactionStore.dragTargetIndex = Math.max(
+      0,
+      Math.min(matrix.rowNames.length, target),
+    )
   }
 
   if (interactionStore.dragState?.type === 'column') {
-    const target = Math.round((pos.x - leftPadding) / cellSize)
-    interactionStore.dragTargetIndex = Math.max(0, Math.min(matrix.columnNames.length, target))
+    const target = Math.round((pos.x - layout.leftPadding) / cellSize)
+
+    interactionStore.dragTargetIndex = Math.max(
+      0,
+      Math.min(matrix.columnNames.length, target),
+    )
   }
 }
 

@@ -4,6 +4,7 @@ import { useDatasetStore } from '@/stores/dataset'
 import { useInteractionStore } from '@/stores/interaction'
 import { useVisualizationStore } from '@/stores/visualization'
 import MatrixInteractionOverlay from './MatrixInteractionOverlay.vue'
+import { getMatrixLayout } from '@/utils/matrixLayout'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
@@ -11,7 +12,7 @@ const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 const visualizationStore = useVisualizationStore()
 
-const minTopPadding = 140
+//const minTopPadding = 140
 const rowLabelMargin = 20
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
@@ -215,16 +216,16 @@ const drawMatrix = () => {
   ctx.font = `${visualizationStore.config.labelSize}px Arial`
   ctx.textBaseline = 'middle'
 
-  const longestRowLabelWidth = Math.max(
-    ...matrix.rowNames.map((name) => ctx.measureText(name).width),
-  )
+  //
+  const layout = getMatrixLayout({
+    rowNames: matrix.rowNames,
+    columnNames: matrix.columnNames,
+    labelSize: visualizationStore.config.labelSize || 14,
+  })
 
-  const longestColumnLabelWidth = Math.max(
-    ...matrix.columnNames.map((name) => ctx.measureText(name).width),
-  )
-
-  const leftPadding = Math.max(120, longestRowLabelWidth + 30)
-  const dynamicTopPadding = Math.max(minTopPadding, longestColumnLabelWidth * 0.75 + 40)//+ 30)
+  const leftPadding = layout.leftPadding
+  const dynamicTopPadding = layout.topPadding
+  //
 
   canvas.width = leftPadding + matrix.columnNames.length * cellSize + 80
   canvas.height = dynamicTopPadding + matrix.rowNames.length * cellSize + 80
@@ -240,15 +241,15 @@ const drawMatrix = () => {
       interactionStore.hoveredLabel?.type === 'column' &&
       interactionStore.hoveredLabel.index === colIndex
 
-    const isDragged =
+    /*const isDragged =
       interactionStore.dragState?.type === 'column' &&
-      interactionStore.dragState.fromIndex === colIndex
+      interactionStore.dragState.fromIndex === colIndex*/
 
     const x = leftPadding + colIndex * cellSize
 
-    if (isHovered || isDragged) {
-      ctx.strokeStyle = isDragged ? '#1f6feb' : '#999'
-      ctx.lineWidth = isDragged ? 3 : 2
+    if (isHovered && !interactionStore.dragState) {
+      ctx.strokeStyle = '#999'
+      ctx.lineWidth = 2
       ctx.beginPath()
       ctx.moveTo(x, dynamicTopPadding - 5)
       ctx.lineTo(x + cellSize - 2, dynamicTopPadding - 5)
@@ -279,15 +280,15 @@ const drawMatrix = () => {
       interactionStore.hoveredLabel?.type === 'row' &&
       interactionStore.hoveredLabel.index === rowIndex
 
-    const isDragged =
+    /*const isDragged =
       interactionStore.dragState?.type === 'row' &&
-      interactionStore.dragState.fromIndex === rowIndex
+      interactionStore.dragState.fromIndex === rowIndex*/
 
     const y = dynamicTopPadding + rowIndex * cellSize
 
-    if (isHovered || isDragged) {
-      ctx.strokeStyle = isDragged ? '#1f6feb' : '#999'
-      ctx.lineWidth = isDragged ? 3 : 2
+    if (isHovered && !interactionStore.dragState) {
+      ctx.strokeStyle = '#999'
+      ctx.lineWidth = 2
       ctx.beginPath()
       ctx.moveTo(leftPadding - 8, y)
       ctx.lineTo(leftPadding - 8, y + cellSize - 2)
@@ -390,7 +391,7 @@ const drawMatrix = () => {
   })
 
   if (interactionStore.dragState && interactionStore.dragTargetIndex !== null) {
-    ctx.strokeStyle = 'black'
+    ctx.strokeStyle = '#1f6feb'
     ctx.lineWidth = 3
 
     if (interactionStore.dragState.type === 'row') {
