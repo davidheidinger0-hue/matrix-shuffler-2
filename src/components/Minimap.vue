@@ -7,6 +7,27 @@ const props = defineProps<{
   version: number
 }>()
 const minimapCanvas = ref<HTMLCanvasElement | null>(null)
+const MINIMAP_SIZE = 180
+
+type Rect = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+const viewport: Rect = {
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+}
+
+const dragState = {
+  active: false,
+  offsetX: 0,
+  offsetY: 0,
+}
+
 const drawMinimap = () => {
   const mainCanvas = props.canvas
   const wrapper = props.wrapper
@@ -21,16 +42,13 @@ const drawMinimap = () => {
 
   if (!ctx) return
 
-  canvas.width = 180
-  canvas.height = 180
+  canvas.width = MINIMAP_SIZE
+  canvas.height = MINIMAP_SIZE
 
-  const minimapWidth = 180
-  const minimapHeight = 180
+  const minimapWidth = MINIMAP_SIZE
+  const minimapHeight = MINIMAP_SIZE
 
-  const scale = Math.min(
-    minimapWidth / mainCanvas.width,
-    minimapHeight / mainCanvas.height,
-  )
+  const scale = getScale()
 
   const scaledWidth =
     mainCanvas.width * scale
@@ -58,6 +76,11 @@ const drawMinimap = () => {
 
   const viewportHeight =
     wrapper.clientHeight * scale
+  
+  viewport.x = viewportX
+  viewport.y = viewportY
+  viewport.width = viewportWidth
+  viewport.height = viewportHeight
 
   ctx.strokeStyle = 'red'
   ctx.lineWidth = 2
@@ -68,6 +91,88 @@ const drawMinimap = () => {
     viewportWidth,
     viewportHeight,
 )
+}
+
+const handleMouseDown = (event: MouseEvent) => {
+  const canvas = minimapCanvas.value
+
+  if (!canvas) return
+
+  const rect = canvas.getBoundingClientRect()
+
+  const mouseX = event.clientX - rect.left
+  const mouseY = event.clientY - rect.top
+
+  const hitPadding = 5
+
+  const insideViewport =
+  mouseX >= viewport.x - hitPadding &&
+  mouseX <= viewport.x + viewport.width + hitPadding &&
+  mouseY >= viewport.y - hitPadding &&
+  mouseY <= viewport.y + viewport.height + hitPadding
+
+  if (!insideViewport) return
+
+  dragState.active = true
+
+  dragState.offsetX = mouseX - viewport.x
+  dragState.offsetY = mouseY - viewport.y
+}
+
+const handleMouseUp = () => {
+  dragState.active = false
+}
+
+const handleMouseMove = (event: MouseEvent) => {
+  if (!dragState.active) return
+
+  const canvas = minimapCanvas.value
+
+  if (!canvas) return
+  if (!props.wrapper) return
+  if (!props.canvas) return
+
+  const rect = canvas.getBoundingClientRect()
+
+  const mouseX = event.clientX - rect.left
+  const mouseY = event.clientY - rect.top
+
+  const newViewportX =
+    mouseX - dragState.offsetX
+
+  const newViewportY =
+    mouseY - dragState.offsetY
+    const scale = getScale()
+
+  const maxViewportX =
+    MINIMAP_SIZE - viewport.width
+
+  const maxViewportY =
+    MINIMAP_SIZE - viewport.height
+
+  const clampedViewportX = Math.max(
+    0,
+    Math.min(newViewportX, maxViewportX),
+  )
+
+const clampedViewportY = Math.max(
+  0,
+  Math.min(newViewportY, maxViewportY),
+)
+  props.wrapper.scrollLeft =
+    clampedViewportX / scale
+
+  props.wrapper.scrollTop =
+    clampedViewportY / scale
+}
+
+const getScale = () => {
+  if (!props.canvas) return 1
+
+  return Math.min(
+    MINIMAP_SIZE / props.canvas.width,
+    MINIMAP_SIZE / props.canvas.height,
+  )
 }
 
 const handleScroll = () => {
@@ -81,12 +186,32 @@ onMounted(() => {
     'scroll',
     handleScroll,
   )
+
+  window.addEventListener(
+    'mousemove',
+    handleMouseMove,
+    )
+
+  window.addEventListener(
+    'mouseup',
+    handleMouseUp,
+    )
 })
 
 onUnmounted(() => {
   props.wrapper?.removeEventListener(
     'scroll',
     handleScroll,
+  )
+
+  window.removeEventListener(
+  'mousemove',
+  handleMouseMove,
+  )
+
+window.removeEventListener(
+  'mouseup',
+  handleMouseUp,
   )
 })
 
@@ -100,7 +225,10 @@ watch(
 
 <template>
   <div class="minimap">
-    <canvas ref="minimapCanvas"></canvas>
+    <canvas
+      ref="minimapCanvas"
+      @mousedown="handleMouseDown"
+    ></canvas>
   </div>
 </template>
 
@@ -115,6 +243,8 @@ watch(
 
   background: white;
   border: 1px solid #ccc;
+
+  z-index: 9999;
 }
 canvas {
   width: 100%;
