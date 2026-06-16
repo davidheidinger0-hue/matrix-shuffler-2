@@ -36,7 +36,7 @@ const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
 }
 
 const changeEncoding = (encoding: string) => {
-  visualizationStore.setEncoding(encoding as 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart')
+  visualizationStore.setEncoding(encoding as 'circle' | 'color' | 'circle-color' | 'color-text' | 'hatched-bar-charts' | 'bar-chart')
 }
 
 const handleImportData = () => {
@@ -306,9 +306,9 @@ const closeHowToUseModal = () => {
                 Text + Gradient
                 <span class="tooltip-box">Uses exact numerical text superimposed on colour gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value, while the text displays the exact underlying data.</span>
               </a>
-              <a href="#" @click.prevent="changeEncoding('dual-bar-charts')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'dual-bar-charts' }">
-                Dual Bar Charts
-                <span class="tooltip-box">Uses bar charts with two shades of grey to convey values. A white cell corresponds to the minimum value on the row; a cell filled with hatched lines corresponds to the midpoint value, and a black cell corresponds to the maximum value.</span>
+              <a href="#" @click.prevent="changeEncoding('hatched-bar-charts')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'hatched-bar-charts' }">
+                Hatched Bar Charts
+                <span class="tooltip-box">Uses bar charts with hatched lines to convey values. A white cell corresponds to the minimum value on the row; a cell filled with hatched lines corresponds to the midpoint value, and a black cell corresponds to the maximum value.</span>
               </a>
               <a href="#" @click.prevent="changeEncoding('bar-chart')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'bar-chart' }">
                 Bar Chart

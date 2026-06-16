@@ -39,6 +39,10 @@ const interpolateColor = (value: number, minColor: string, maxColor: string) => 
   return `rgb(${r}, ${g}, ${b})`
 }
 
+const getTextColor = (normalizedValue: number) => {
+  return normalizedValue > 0.55 ? 'white' : 'black'
+}
+
 const drawColorCell = (
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -114,7 +118,7 @@ const drawColorTextCell = (
 ) => {
   drawColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
 
-  ctx.fillStyle = 'black'
+  ctx.fillStyle = getTextColor(normalizedValue)
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(value.toString(), x + cellSize / 2, y + cellSize / 2)
@@ -149,7 +153,7 @@ const drawBarChartCell = (
   }
 }
 
-const drawDualBarChartsCell = (
+const drawHatchedBarChartsCell = (
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -355,8 +359,8 @@ const drawMatrix = () => {
       )
       break
 
-    case 'dual-bar-charts':
-      drawDualBarChartsCell(
+    case 'hatched-bar-charts':
+      drawHatchedBarChartsCell(
         ctx,
         x,
         y,
