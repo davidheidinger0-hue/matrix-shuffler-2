@@ -9,6 +9,17 @@ const props = defineProps<{
 const minimapCanvas = ref<HTMLCanvasElement | null>(null)
 const MINIMAP_SIZE = 180
 
+const position = ref({
+  x: window.innerWidth - 200,
+  y: window.innerHeight - 220,
+})
+
+const moveState = {
+  active: false,
+  offsetX: 0,
+  offsetY: 0,
+}
+
 type Rect = {
   x: number
   y: number
@@ -97,11 +108,12 @@ const drawMinimap = () => {
 }
 
 const handleMouseDown = (event: MouseEvent) => {
-  const canvas = minimapCanvas.value
+  //const canvas = minimapCanvas.value
 
-  if (!canvas) return
+  //if (!canvas) return
 
-  const rect = canvas.getBoundingClientRect()
+  //const rect = canvas.getBoundingClientRect()
+  const rect = minimapCanvas.value!.getBoundingClientRect()
 
   const mouseX = event.clientX - rect.left
   const mouseY = event.clientY - rect.top
@@ -179,6 +191,25 @@ const handleMouseMove = (event: MouseEvent) => {
     (clampedViewportY - offsetY) / scale
 }
 
+const handlePanelPointerDown = (event: PointerEvent) => {
+  console.log("PANEL DRAG START")
+  moveState.active = true
+
+  moveState.offsetX = event.clientX - position.value.x
+  moveState.offsetY = event.clientY - position.value.y
+}
+
+const handlePanelPointerMove = (event: PointerEvent) => {
+  if (!moveState.active) return
+
+  position.value.x = event.clientX - moveState.offsetX
+  position.value.y = event.clientY - moveState.offsetY
+}
+
+const handlePanelPointerUp = () => {
+  moveState.active = false
+}
+
 const getScale = () => {
   if (!props.canvas) return 1
 
@@ -211,6 +242,16 @@ onMounted(async () => {
     'mouseup',
     handleMouseUp,
   )
+
+  // for moving minimap
+  window.addEventListener(
+    'pointermove',
+    handlePanelPointerMove
+  )
+  window.addEventListener(
+    'pointerup',
+    handlePanelPointerUp
+  )
 })
 
 onUnmounted(() => {
@@ -224,9 +265,18 @@ onUnmounted(() => {
   handleMouseMove,
   )
 
-window.removeEventListener(
-  'mouseup',
-  handleMouseUp,
+  window.removeEventListener(
+    'mouseup',
+    handleMouseUp,
+  )
+
+   window.removeEventListener(
+    'pointermove',
+    handlePanelPointerMove
+  )
+  window.removeEventListener(
+    'pointerup',
+    handlePanelPointerUp
   )
 })
 
@@ -246,19 +296,23 @@ watch(
 </script>
 
 <template>
-  <div class="minimap">
-    <canvas
-      ref="minimapCanvas"
-      @mousedown="handleMouseDown"
-    ></canvas>
+  <div
+    class="minimap"
+    :style="{
+      left: position.x + 'px',
+      top: position.y + 'px',
+    }"
+    @pointerdown="handlePanelPointerDown"
+  >
+    <canvas ref="minimapCanvas"></canvas>
   </div>
 </template>
 
 <style scoped>
 .minimap {
-  position: absolute;
-  right: 20px;
-  bottom: 60px;
+  position: fixed;
+  /*right: 20px;
+  bottom: 60px;*/
 
   width: 180px;
   height: 180px;
@@ -267,8 +321,11 @@ watch(
   border: 1px solid #ccc;
 
   z-index: 9999;
+
+  user-select: none;
 }
 canvas {
+  pointer-events: none;
   width: 100%;
   height: 100%;
   display: block;
