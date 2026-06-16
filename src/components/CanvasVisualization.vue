@@ -15,7 +15,7 @@ const minTopPadding = 140
 const rowLabelMargin = 20
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
-const getLabelRotation = () => visualizationStore.settings.labelRotation || 45
+const getLabelRotation = () => visualizationStore.settings.labelRotation ?? 45
 
 const hexToRgb = (hex: string) => {
   const cleanHex = hex.replace('#', '')
