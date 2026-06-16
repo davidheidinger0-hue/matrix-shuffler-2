@@ -11,7 +11,8 @@ const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 const visualizationStore = useVisualizationStore()
 
-const padding = 140
+const minTopPadding = 140
+const rowLabelMargin = 20
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
 const getLabelRotation = () => visualizationStore.settings.labelRotation || 45
@@ -27,7 +28,6 @@ const hexToRgb = (hex: string) => {
   }
 }
 
-// interpolate color between the configured min and max color
 const interpolateColor = (value: number, minColor: string, maxColor: string) => {
   const min = hexToRgb(minColor)
   const max = hexToRgb(maxColor)
@@ -38,7 +38,7 @@ const interpolateColor = (value: number, minColor: string, maxColor: string) => 
 
   return `rgb(${r}, ${g}, ${b})`
 }
-// encodings
+
 const drawColorCell = (
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -212,11 +212,26 @@ const drawMatrix = () => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  canvas.width = padding + matrix.columnNames.length * cellSize + 80
-  canvas.height = padding + matrix.rowNames.length * cellSize + 80
+  ctx.font = `${visualizationStore.config.labelSize}px Arial`
+  ctx.textBaseline = 'middle'
+
+  const longestRowLabelWidth = Math.max(
+    ...matrix.rowNames.map((name) => ctx.measureText(name).width),
+  )
+
+  const longestColumnLabelWidth = Math.max(
+    ...matrix.columnNames.map((name) => ctx.measureText(name).width),
+  )
+
+  const leftPadding = Math.max(120, longestRowLabelWidth + 30)
+  const dynamicTopPadding = Math.max(minTopPadding, longestColumnLabelWidth * 0.75 + 40)//+ 30)
+
+  canvas.width = leftPadding + matrix.columnNames.length * cellSize + 80
+  canvas.height = dynamicTopPadding + matrix.rowNames.length * cellSize + 80
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+  // Canvas resets context state after resizing, so restore font settings.
   ctx.font = `${visualizationStore.config.labelSize}px Arial`
   ctx.textBaseline = 'middle'
 
@@ -229,22 +244,32 @@ const drawMatrix = () => {
       interactionStore.dragState?.type === 'column' &&
       interactionStore.dragState.fromIndex === colIndex
 
-    const x = padding + colIndex * cellSize
+    const x = leftPadding + colIndex * cellSize
 
     if (isHovered || isDragged) {
       ctx.strokeStyle = isDragged ? '#1f6feb' : '#999'
       ctx.lineWidth = isDragged ? 3 : 2
       ctx.beginPath()
-      ctx.moveTo(x, padding - 5)
-      ctx.lineTo(x + cellSize - 2, padding - 5)
+      ctx.moveTo(x, dynamicTopPadding - 5)
+      ctx.lineTo(x + cellSize - 2, dynamicTopPadding - 5)
       ctx.stroke()
     }
 
-    ctx.save()
-    ctx.translate(x + cellSize / 2, padding - 35)
+    /*ctx.save()
+    ctx.translate(x + cellSize / 2, dynamicTopPadding - 15)
     ctx.rotate((-getLabelRotation() * Math.PI) / 180)
     ctx.fillStyle = 'black'
     ctx.textAlign = 'center'
+    ctx.fillText(name, 0, 0)
+    ctx.restore()
+    */
+
+    ctx.save()
+    ctx.translate(x + cellSize / 2, dynamicTopPadding - 10)
+    ctx.rotate((-getLabelRotation() * Math.PI) / 180)
+    ctx.fillStyle = 'black'
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
     ctx.fillText(name, 0, 0)
     ctx.restore()
   })
@@ -258,40 +283,34 @@ const drawMatrix = () => {
       interactionStore.dragState?.type === 'row' &&
       interactionStore.dragState.fromIndex === rowIndex
 
-    const y = padding + rowIndex * cellSize
+    const y = dynamicTopPadding + rowIndex * cellSize
 
     if (isHovered || isDragged) {
       ctx.strokeStyle = isDragged ? '#1f6feb' : '#999'
       ctx.lineWidth = isDragged ? 3 : 2
       ctx.beginPath()
-      ctx.moveTo(padding - 8, y)
-      ctx.lineTo(padding - 8, y + cellSize - 2)
+      ctx.moveTo(leftPadding - 8, y)
+      ctx.lineTo(leftPadding - 8, y + cellSize - 2)
       ctx.stroke()
     }
 
     ctx.fillStyle = 'black'
-    ctx.textAlign = 'right'
-    ctx.fillText(name, padding - 10, y + cellSize / 2)
+    ctx.textAlign = 'left'
+    ctx.fillText(name, rowLabelMargin, y + cellSize / 2)
   })
 
-    const maxInitialValue = Math.max(
-  ...matrix.values.flat().map((cell) => Number(cell.initialValue) || 0),
-)
+  const maxInitialValue = Math.max(
+    ...matrix.values.flat().map((cell) => Number(cell.initialValue) || 0),
+  )
 
   matrix.values.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
-
-      if (rowIndex === 0 && colIndex === 0) {
-        console.log(cell)
-      }
       const rawValue = Number(cell.initialValue) || 0
       const value = cell.normalizedValue ?? (maxInitialValue > 0 ? rawValue / maxInitialValue : 0)
-
       const normalizedValue = Math.min(1, Math.max(0, value))
-      //const alpha = normalizedValue
 
-      const x = padding + colIndex * cellSize
-      const y = padding + rowIndex * cellSize
+      const x = leftPadding + colIndex * cellSize
+      const y = dynamicTopPadding + rowIndex * cellSize
 
       const cellColor = interpolateColor(
         normalizedValue,
@@ -375,18 +394,18 @@ const drawMatrix = () => {
     ctx.lineWidth = 3
 
     if (interactionStore.dragState.type === 'row') {
-      const y = padding + interactionStore.dragTargetIndex * cellSize
+      const y = dynamicTopPadding + interactionStore.dragTargetIndex * cellSize
       ctx.beginPath()
-      ctx.moveTo(padding, y)
-      ctx.lineTo(padding + matrix.columnNames.length * cellSize, y)
+      ctx.moveTo(leftPadding, y)
+      ctx.lineTo(leftPadding + matrix.columnNames.length * cellSize, y)
       ctx.stroke()
     }
 
     if (interactionStore.dragState.type === 'column') {
-      const x = padding + interactionStore.dragTargetIndex * cellSize
+      const x = leftPadding + interactionStore.dragTargetIndex * cellSize
       ctx.beginPath()
-      ctx.moveTo(x, padding)
-      ctx.lineTo(x, padding + matrix.rowNames.length * cellSize)
+      ctx.moveTo(x, dynamicTopPadding)
+      ctx.lineTo(x, dynamicTopPadding + matrix.rowNames.length * cellSize)
       ctx.stroke()
     }
   }
@@ -414,18 +433,6 @@ watch(
   () => drawMatrix(),
   { deep: true },
 )
-
-/*
-watch(
-  () => visualizationStore.settings,
-  () => drawMatrix(),
-  { deep: true },
-)
-
-watch(
-  () => visualizationStore.config.encoding,
-  () => drawMatrix(),
-)*/
 </script>
 
 <template>
