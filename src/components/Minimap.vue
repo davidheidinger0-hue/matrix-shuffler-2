@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue'
 
 const props = defineProps<{
   wrapper: HTMLDivElement | null
@@ -8,17 +8,6 @@ const props = defineProps<{
 }>()
 const minimapCanvas = ref<HTMLCanvasElement | null>(null)
 const MINIMAP_SIZE = 180
-
-const position = ref({
-  x: window.innerWidth - 200,
-  y: window.innerHeight - 220,
-})
-
-const moveState = {
-  active: false,
-  offsetX: 0,
-  offsetY: 0,
-}
 
 type Rect = {
   x: number
@@ -38,6 +27,15 @@ const dragState = {
   offsetX: 0,
   offsetY: 0,
 }
+const panelDrag = {
+  active: false,
+  offsetX: 0,
+  offsetY: 0,
+}
+const position = reactive({
+  x: 60,
+  y: 20,
+})
 
 const drawMinimap = () => {
   const mainCanvas = props.canvas
@@ -108,12 +106,11 @@ const drawMinimap = () => {
 }
 
 const handleMouseDown = (event: MouseEvent) => {
-  //const canvas = minimapCanvas.value
+  const canvas = minimapCanvas.value
 
-  //if (!canvas) return
+  if (!canvas) return
 
-  //const rect = canvas.getBoundingClientRect()
-  const rect = minimapCanvas.value!.getBoundingClientRect()
+  const rect = canvas.getBoundingClientRect()
 
   const mouseX = event.clientX - rect.left
   const mouseY = event.clientY - rect.top
@@ -191,25 +188,6 @@ const handleMouseMove = (event: MouseEvent) => {
     (clampedViewportY - offsetY) / scale
 }
 
-const handlePanelPointerDown = (event: PointerEvent) => {
-  console.log("PANEL DRAG START")
-  moveState.active = true
-
-  moveState.offsetX = event.clientX - position.value.x
-  moveState.offsetY = event.clientY - position.value.y
-}
-
-const handlePanelPointerMove = (event: PointerEvent) => {
-  if (!moveState.active) return
-
-  position.value.x = event.clientX - moveState.offsetX
-  position.value.y = event.clientY - moveState.offsetY
-}
-
-const handlePanelPointerUp = () => {
-  moveState.active = false
-}
-
 const getScale = () => {
   if (!props.canvas) return 1
 
@@ -217,6 +195,30 @@ const getScale = () => {
     MINIMAP_SIZE / props.canvas.width,
     MINIMAP_SIZE / props.canvas.height,
   )
+}
+
+const handlePanelMouseDown = (event: MouseEvent) => {
+  panelDrag.active = true
+
+  panelDrag.offsetX = event.clientX - position.x
+  panelDrag.offsetY = event.clientY - position.y
+
+  window.addEventListener('mousemove', handlePanelMouseMove)
+  window.addEventListener('mouseup', handlePanelMouseUp)
+}
+
+const handlePanelMouseMove = (event: MouseEvent) => {
+  if (!panelDrag.active) return
+
+  position.x = event.clientX - panelDrag.offsetX
+  position.y = event.clientY - panelDrag.offsetY
+}
+
+const handlePanelMouseUp = () => {
+  panelDrag.active = false
+
+  window.removeEventListener('mousemove', handlePanelMouseMove)
+  window.removeEventListener('mouseup', handlePanelMouseUp)
 }
 
 const handleScroll = () => {
@@ -242,16 +244,6 @@ onMounted(async () => {
     'mouseup',
     handleMouseUp,
   )
-
-  // for moving minimap
-  window.addEventListener(
-    'pointermove',
-    handlePanelPointerMove
-  )
-  window.addEventListener(
-    'pointerup',
-    handlePanelPointerUp
-  )
 })
 
 onUnmounted(() => {
@@ -265,18 +257,9 @@ onUnmounted(() => {
   handleMouseMove,
   )
 
-  window.removeEventListener(
-    'mouseup',
-    handleMouseUp,
-  )
-
-   window.removeEventListener(
-    'pointermove',
-    handlePanelPointerMove
-  )
-  window.removeEventListener(
-    'pointerup',
-    handlePanelPointerUp
+window.removeEventListener(
+  'mouseup',
+  handleMouseUp,
   )
 })
 
@@ -298,36 +281,51 @@ watch(
 <template>
   <div
     class="minimap"
-    :style="{
-      left: position.x + 'px',
-      top: position.y + 'px',
-    }"
-    @pointerdown="handlePanelPointerDown"
+    :style="{ left: position.x + 'px', top: position.y + 'px' }"
   >
-    <canvas ref="minimapCanvas"></canvas>
+    <div
+      class="minimap-handle"
+      @mousedown="handlePanelMouseDown"
+    >
+      Minimap
+    </div>
+
+    <canvas
+      ref="minimapCanvas"
+      @mousedown="handleMouseDown"
+    ></canvas>
   </div>
 </template>
 
 <style scoped>
 .minimap {
-  position: fixed;
-  /*right: 20px;
-  bottom: 60px;*/
+  position: absolute;
+  right: 20px;
+  bottom: 60px;
 
   width: 180px;
   height: 180px;
+  display: flex;
+  flex-direction: column;
 
   background: white;
   border: 1px solid #ccc;
 
   z-index: 9999;
-
+}
+.minimap-handle {
+  height: 24px;
+  background: #eee;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  font-size: 12px;
   user-select: none;
 }
 canvas {
-  pointer-events: none;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 24px);
   display: block;
 }
 </style>
