@@ -139,7 +139,8 @@ const handleMouseUp = () => {
   dragState.active = false
 }
 
-const handleMouseMove = (event: MouseEvent) => {
+// Dragging and scrolling in minimap is deactivated now
+/*const handleMouseMove = (event: MouseEvent) => {
   if (!dragState.active) return
 
   const canvas = minimapCanvas.value
@@ -190,7 +191,7 @@ const handleMouseMove = (event: MouseEvent) => {
 
   props.wrapper.scrollTop =
     (clampedViewportY - offsetY) / scale
-}
+}*/
 
 const getScale = () => {
   if (!props.canvas) return 1
@@ -239,10 +240,10 @@ onMounted(async () => {
     handleScroll,
   )
 
-  window.addEventListener(
+  /*window.addEventListener(
     'mousemove',
     handleMouseMove,
-  )
+  )*/
 
   window.addEventListener(
     'mouseup',
@@ -256,10 +257,10 @@ onUnmounted(() => {
     handleScroll,
   )
 
-  window.removeEventListener(
+  /*window.removeEventListener(
   'mousemove',
   handleMouseMove,
-  )
+  )*/
 
 window.removeEventListener(
   'mouseup',
