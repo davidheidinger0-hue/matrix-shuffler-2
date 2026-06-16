@@ -6,7 +6,7 @@
 
     <div class="panel-content" v-show="isOpen">
       <div class="setting-group">
-        <h3 class="settings-heading">Normalization</h3>
+        <h3 class="settings-heading">Normalisation</h3>
         <div class="radio-group">
           <label>
             <input
@@ -61,9 +61,6 @@
           />
         </label>
         <div class="rotation-controls">
-          <button @click="setOptimalRotation" class="btn-auto" v-if="datasetStore.hasData">
-            Auto (Optimal)
-          </button>
           <button @click="setRotation(0)" class="btn-preset">0°</button>
           <button @click="setRotation(45)" class="btn-preset">45°</button>
           <button @click="setRotation(90)" class="btn-preset">90°</button>
@@ -91,15 +88,15 @@
       </div>
 
       <div class="setting-group">
-        <h3 class="settings-heading">Visualization Colors</h3>
+        <h3 class="settings-heading">Visualisation Colours</h3>
         <div class="color-inputs">
           <div class="color-input-group">
-            <label>Min Color:</label>
+            <label>Min Colour:</label>
             <input type="color" v-model="localSettings.minColor" @change="applySettings" />
             <span class="color-preview" :style="{ backgroundColor: localSettings.minColor }"></span>
           </div>
           <div class="color-input-group">
-            <label>Max Color:</label>
+            <label>Max Colour:</label>
             <input type="color" v-model="localSettings.maxColor" @change="applySettings" />
             <span class="color-preview" :style="{ backgroundColor: localSettings.maxColor }"></span>
           </div>
@@ -196,7 +193,7 @@
               >{{ datasetStore.rowNames.length }} rows ×
               {{ datasetStore.columnNames.length }} columns</span
             >
-            <span>Normalization: {{ datasetStore.normalizationType }}</span>
+            <span>Normalisation: {{ datasetStore.normalizationType }}</span>
           </div>
         </div>
       </div>
@@ -205,7 +202,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useVisualizationStore, type VisualizationSettings } from '@/stores/visualization'
 import { useDatasetStore, type SortMethod, type SortDirection } from '@/stores/dataset'
 
@@ -228,12 +225,11 @@ const localSettings = reactive<VisualizationSettings>({
   cellSize: 40,
 })
 
-const colorSchemes = {
-  blues: { minColor: '#e3f0fb', maxColor: '#7daee6' },
-  reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
-  greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
-  viridis: { minColor: '#e0e7f3', maxColor: '#b5e3b5' },
-}
+//const colorSchemes = {
+//  blues: { minColor: '#e3f0fb', maxColor: '#7daee6' },
+//  reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
+//  greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
+//}
 
 const applySettings = () => {
   visualizationStore.updateSettings(localSettings)
@@ -246,12 +242,12 @@ const applySettings = () => {
   }
 }
 
-const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
-  localSettings.colorScheme = scheme
-  localSettings.minColor = colorSchemes[scheme].minColor
-  localSettings.maxColor = colorSchemes[scheme].maxColor
-  applySettings()
-}
+//const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
+//  localSettings.colorScheme = scheme
+//  localSettings.minColor = colorSchemes[scheme].minColor
+//  localSettings.maxColor = colorSchemes[scheme].maxColor
+//  applySettings()
+//}
 
 const resetSettings = () => {
   localSettings.colorScheme = 'blues'
@@ -283,13 +279,6 @@ const sortColumnsBySimilarity = () => {
   datasetStore.sortColumnsBySimilarity(selectedColIndex.value, selectedDirection.value)
 }
 
-const setOptimalRotation = () => {
-  if (datasetStore.hasData && datasetStore.columnNames.length > 0) {
-    visualizationStore.calculateAndSetOptimalLabelRotation(datasetStore.columnNames)
-    localSettings.labelRotation = visualizationStore.settings.labelRotation
-  }
-}
-
 const setRotation = (rotation: number) => {
   localSettings.labelRotation = rotation
   applySettings()
@@ -298,9 +287,6 @@ const setRotation = (rotation: number) => {
 const applyCellSizeSettings = () => {
   const cellSize = Number(localSettings.cellSize)
   visualizationStore.setMatrixCellDimension(cellSize)
-  if (datasetStore.hasData && datasetStore.columnNames.length > 0) {
-    visualizationStore.calculateAndSetOptimalLabelRotation(datasetStore.columnNames, cellSize)
-  }
   applySettings()
 }
 
@@ -309,6 +295,13 @@ const setCellSize = (size: number) => {
   applyCellSizeSettings()
 }
 
+watch(
+  () => visualizationStore.settings.labelRotation,
+  (newRotation) => {
+    localSettings.labelRotation = newRotation
+  }
+)
+
 onMounted(() => {
   Object.assign(localSettings, visualizationStore.settings)
 })
@@ -316,7 +309,6 @@ onMounted(() => {
 
 <style scoped>
 .settings-heading {
-  text-transform: uppercase;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.6px;
@@ -597,7 +589,6 @@ onMounted(() => {
   gap: 8px;
 }
 
-.btn-auto,
 .btn-preset {
   padding: 6px 12px;
   border: 1px solid var(--color-border);

@@ -15,5 +15,5 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  base: './'
+  base: process.env.IS_GH_PAGES ? '/matrix-shuffler-2/' : '/'
 })

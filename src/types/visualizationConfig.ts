@@ -2,7 +2,7 @@ export interface VisualizationConfig {
   width: number
   height: number
   margin: { top: number; right: number; bottom: number; left: number }
-  colorScheme: 'blues' | 'greens' | 'heatmap' | 'bertifier' | 'reds' | 'viridis' | 'black'
+  colorScheme: 'blues' | 'greens' | 'heatmap' | 'bertifier' | 'reds' | 'black'
   cellShape: 'rect' | 'circle'
   showLabels: boolean
   encoding: VisualizationEncoding
@@ -11,4 +11,4 @@ export interface VisualizationConfig {
   labelSize: number
 }
 
-export type VisualizationEncoding = 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart'
+export type VisualizationEncoding = 'circle' | 'color' | 'circle-color' | 'color-text' | 'hatched-bar-charts' | 'bar-chart'

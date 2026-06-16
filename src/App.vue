@@ -24,7 +24,6 @@ const colorSchemes = {
   blues: { minColor: '#e3f0fb', maxColor: '#7daee6' },
   reds: { minColor: '#fde8e8', maxColor: '#f59e9e' },
   greens: { minColor: '#e6f9ed', maxColor: '#7ed6a2' },
-  viridis: { minColor: '#e0e7f3', maxColor: '#b5e3b5' },
   black: { minColor: '#f0f0f0', maxColor: '#000000' },
 }
 
@@ -37,7 +36,7 @@ const applyColorScheme = (scheme: keyof typeof colorSchemes) => {
 }
 
 const changeEncoding = (encoding: string) => {
-  visualizationStore.setEncoding(encoding as 'circle' | 'color' | 'circle-color' | 'color-text' | 'dual-bar-charts' | 'bar-chart')
+  visualizationStore.setEncoding(encoding as 'circle' | 'color' | 'circle-color' | 'color-text' | 'hatched-bar-charts' | 'bar-chart')
 }
 
 const handleImportData = () => {
@@ -150,16 +149,16 @@ const handleCSVImport = (event: Event) => {
 
 const exampleDatasets = [
   { name: 'appropriateness.csv', path: './examples/appropriateness.csv' },
-  { name: 'bertin-hotel.csv', path: './examples/bertin_hotel.csv' },
-  { name: 'bertin-navy.csv', path: './examples/bertin_navy.csv' },
-  { name: 'bertin-towns.csv', path: './examples/bertin_towns.csv' },
+  { name: 'bertin-hotel.csv', path: './examples/bertin-hotel.csv' },
+  { name: 'bertin-navy.csv', path: './examples/bertin-navy.csv' },
+  { name: 'bertin-towns.csv', path: './examples/bertin-towns.csv' },
   { name: 'cereal.csv', path: './examples/cereal.csv' },
-  { name: 'european-values.csv', path: './examples/european_values.csv' },
-  { name: 'motor_trend_cars', path: './examples/motor_trend_cars.csv' },
-  { name: 'sample-data.csv', path: './examples/sample_data.csv' },
-  { name: 'test-data.csv', path: './examples/test_data.csv' },
-  { name: 'wholesale_customers_data', path: './examples/wholesale_customers_data.csv' },
-  { name: 'wine_analysis.csv', path: './examples/wine_analysis.csv' },
+  { name: 'european-values.csv', path: './examples/european-values.csv' },
+  { name: 'motor-trend-cars', path: './examples/motor-trend-cars.csv' },
+  { name: 'sample-data.csv', path: './examples/sample-data.csv' },
+  { name: 'test-data.csv', path: './examples/test-data.csv' },
+  { name: 'wholesale-customers-data', path: './examples/wholesale-customers-data.csv' },
+  { name: 'wine-analysis.csv', path: './examples/wine-analysis.csv' },
   { name: 'zoo.csv', path: './examples/zoo.csv' },
 ]
 
@@ -291,23 +290,40 @@ const closeHowToUseModal = () => {
           <li class="dropdown">
             <a href="#" class="dropbtn">Encoding</a>
             <div class="dropdown-content">
-              <a href="#" @click.prevent="changeEncoding('circle')">Circles</a>
-              <a href="#" @click.prevent="changeEncoding('color')">Rectangles</a>
-              <a href="#" @click.prevent="changeEncoding('circle-color')">Circle+Color</a>
-              <a href="#" @click.prevent="changeEncoding('color-text')">Color+Text</a>
-              <a href="#" @click.prevent="changeEncoding('dual-bar-charts')">Bertin Dual Bar Charts</a>
-              <a href="#" @click.prevent="changeEncoding('bar-chart')">Bertin Bar Chart</a>
+              <a href="#" @click.prevent="changeEncoding('circle')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'circle' }">
+                Circles
+                <span class="tooltip-box">Uses circles to convey values. The larger the circle the higher the value. An empty cell corresponds to the minimum value on the row, a circle filling the cell corresponds to the maximum value.</span>
+              </a>
+              <a href="#" @click.prevent="changeEncoding('color')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'color' }">
+                Gradient
+                <span class="tooltip-box">Uses colour gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value on the row, a cell with the darkest shade corresponds to the maximum value.</span>
+              </a>
+              <a href="#" @click.prevent="changeEncoding('circle-color')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'circle-color' }">
+                Circle + Gradient
+                <span class="tooltip-box">Uses both circles and colour gradients to convey values simultaneously. The larger and darker the circle the higher the value. An empty cell corresponds to the minimum value on the row, a completely filled and darkest circle corresponds to the maximum value.</span>
+              </a>
+              <a href="#" @click.prevent="changeEncoding('color-text')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'color-text' }">
+                Text + Gradient
+                <span class="tooltip-box">Uses exact numerical text superimposed on colour gradients to convey values. The darker the shade the higher the value. A cell with the lightest shade corresponds to the minimum value, while the text displays the exact underlying data.</span>
+              </a>
+              <a href="#" @click.prevent="changeEncoding('hatched-bar-charts')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'hatched-bar-charts' }">
+                Hatched Bar Charts
+                <span class="tooltip-box">Uses bar charts with hatched lines to convey values. A white cell corresponds to the minimum value on the row; a cell filled with hatched lines corresponds to the midpoint value, and a black cell corresponds to the maximum value.</span>
+              </a>
+              <a href="#" @click.prevent="changeEncoding('bar-chart')" class="tooltip-trigger" :class="{ 'active-check': visualizationStore.config.encoding === 'bar-chart' }">
+                Bar Chart
+                <span class="tooltip-box">Uses bar charts to convey values. The higher the bar the higher the value. A bar with zero height corresponds to the minimum value on the row, a bar with maximum height corresponds to the maximum value.</span>
+              </a>
             </div>
           </li>
 
           <li class="dropdown">
-            <a href="#" class="dropbtn">Color Scheme</a>
+            <a href="#" class="dropbtn">Colour Scheme</a>
             <div class="dropdown-content">
-              <a href="#" @click.prevent="applyColorScheme('black')">Black</a>
-              <a href="#" @click.prevent="applyColorScheme('blues')">Blues</a>
-              <a href="#" @click.prevent="applyColorScheme('reds')">Reds</a>
-              <a href="#" @click.prevent="applyColorScheme('greens')">Greens</a>
-              <a href="#" @click.prevent="applyColorScheme('viridis')">Viridis</a>
+              <a href="#" @click.prevent="applyColorScheme('black')" :class="{ 'active-check': visualizationStore.settings.colorScheme === 'black' }">Black</a>
+              <a href="#" @click.prevent="applyColorScheme('blues')" :class="{ 'active-check': visualizationStore.settings.colorScheme === 'blues' }">Blues</a>
+              <a href="#" @click.prevent="applyColorScheme('reds')" :class="{ 'active-check': visualizationStore.settings.colorScheme === 'reds' }">Reds</a>
+              <a href="#" @click.prevent="applyColorScheme('greens')" :class="{ 'active-check': visualizationStore.settings.colorScheme === 'greens' }">Greens</a>
             </div>
           </li>
 
@@ -343,7 +359,7 @@ const closeHowToUseModal = () => {
               :class="{ 'panel-open': showDataTablePanel }"
               :style="showDataTablePanel ? `left: ${dataTablePanelWidth}px;` : 'left: 0;'"
             >
-              🗂️
+              {{ showDataTablePanel ? '❮' : '❯' }}
             </button>
             <transition name="slide-side-panel">
               <div
@@ -395,7 +411,7 @@ const closeHowToUseModal = () => {
           :class="{ 'panel-open': showSettingsPanel }"
           :style="showSettingsPanel ? 'right: 360px;' : 'right: 0;'"
         >
-          ⚙️
+          {{ showSettingsPanel ? '❯' : '❮' }}
         </button>
         <transition name="slide-side-panel">
           <div v-if="showSettingsPanel" class="side-panel">
@@ -583,6 +599,7 @@ const closeHowToUseModal = () => {
   text-decoration: none;
   display: block;
   text-align: left;
+  white-space: nowrap;
 }
 
 /* Change color of dropdown links on hover */
@@ -871,5 +888,66 @@ const closeHowToUseModal = () => {
 
 .load-example-btn:hover {
   background-color: var(--color-primary);
+}
+
+.dropdown-content a::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  font-weight: bold;
+}
+
+.dropdown-content a.active-check::before {
+  content: '✓';
+}
+</style>
+
+<style scoped>
+.tooltip-trigger {
+  position: relative;
+}
+
+.tooltip-trigger .tooltip-box {
+  visibility: hidden;
+  width: 250px;
+  background-color: #3c7add;
+  color: #ffffff;
+  text-align: left;
+  border-radius: 0;
+  padding: 12px;
+  position: absolute;
+  z-index: 1000;
+
+  top: 0;
+  left: 100%;
+  margin-left: 5px;
+
+  font-size: 0.85rem;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateX(-5px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  white-space: normal;
+
+  pointer-events: none;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+  border: none;
+}
+
+.tooltip-trigger .tooltip-box::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  right: 100%;
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #3c7add transparent transparent;
+}
+
+.dropdown-content a:hover.tooltip-trigger .tooltip-box {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0);
 }
 </style>

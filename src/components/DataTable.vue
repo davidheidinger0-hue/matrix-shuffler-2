@@ -182,7 +182,9 @@ const updateDatasetStore = (
 
   const visualizationStore = useVisualizationStore()
   if (columnNames.length > 0) {
-    visualizationStore.calculateAndSetOptimalLabelRotation(columnNames)
+    const maxNameLength = Math.max(...columnNames.map(name => name.length))
+    const defaultRotation = maxNameLength <= 2 ? 0 : 45
+    visualizationStore.updateSettings({ labelRotation: defaultRotation })
   }
 
   if (currentNormalizationType) {

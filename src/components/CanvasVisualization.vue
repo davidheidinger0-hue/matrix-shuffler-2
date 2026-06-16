@@ -4,19 +4,23 @@ import { useDatasetStore } from '@/stores/dataset'
 import { useInteractionStore } from '@/stores/interaction'
 import { useVisualizationStore } from '@/stores/visualization'
 import MatrixInteractionOverlay from './MatrixInteractionOverlay.vue'
+import Minimap from './Minimap.vue'
 import { getMatrixLayout } from '@/utils/matrixLayout'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
+const wrapperRef = ref<HTMLDivElement | null>(null)
 
 const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 const visualizationStore = useVisualizationStore()
 
+const minimapVersion = ref(0)
+
 //const minTopPadding = 140
 const rowLabelMargin = 20
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
-const getLabelRotation = () => visualizationStore.settings.labelRotation || 45
+const getLabelRotation = () => visualizationStore.settings.labelRotation ?? 45
 
 const hexToRgb = (hex: string) => {
   const cleanHex = hex.replace('#', '')
@@ -38,6 +42,10 @@ const interpolateColor = (value: number, minColor: string, maxColor: string) => 
   const b = Math.round(min.b + (max.b - min.b) * value)
 
   return `rgb(${r}, ${g}, ${b})`
+}
+
+const getTextColor = (normalizedValue: number) => {
+  return normalizedValue > 0.55 ? 'white' : 'black'
 }
 
 const drawColorCell = (
@@ -66,8 +74,8 @@ const drawCircleCell = (
   normalizedValue: number,
   cellColor: string,
 ) => {
-  ctx.strokeStyle = cellColor
-  ctx.lineWidth = 1
+  ctx.strokeStyle = '#333333'
+  ctx.lineWidth = 0.05
   ctx.strokeRect(x, y, cellSize - 2, cellSize - 2)
 
   ctx.beginPath()
@@ -115,7 +123,7 @@ const drawColorTextCell = (
 ) => {
   drawColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
 
-  ctx.fillStyle = 'black'
+  ctx.fillStyle = getTextColor(normalizedValue)
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(value.toString(), x + cellSize / 2, y + cellSize / 2)
@@ -150,7 +158,7 @@ const drawBarChartCell = (
   }
 }
 
-const drawDualBarChartsCell = (
+const drawHatchedBarChartsCell = (
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -319,64 +327,64 @@ const drawMatrix = () => {
         visualizationStore.settings.maxColor,
       )
 
-      switch (visualizationStore.config.encoding) {
-        case 'circle':
-          drawCircleCell(ctx, x, y, cellSize, normalizedValue, cellColor)
-          break
+  switch (visualizationStore.config.encoding) {
+    case 'circle':
+      drawCircleCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+      break
 
-        case 'circle-color':
-          drawCircleColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
-          break
+    case 'circle-color':
+      drawCircleColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+      break
 
-        case 'color-text':
-          drawColorTextCell(
-            ctx,
-            x,
-            y,
-            cellSize,
-            normalizedValue,
-            cellColor,
-            Number(cell.initialValue),
-          )
-          break
+    case 'color-text':
+      drawColorTextCell(
+        ctx,
+        x,
+        y,
+        cellSize,
+        normalizedValue,
+        cellColor,
+        Number(cell.initialValue),
+      )
+      break
 
-        case 'bar-chart':
-          drawBarChartCell(
-            ctx,
-            x,
-            y,
-            cellSize,
-            normalizedValue,
-            interpolateColor(
-              1,
-              visualizationStore.settings.minColor,
-              visualizationStore.settings.maxColor,
-            ),
-            cellColor,
-          )
-          break
+    case 'bar-chart':
+      drawBarChartCell(
+        ctx,
+        x,
+        y,
+        cellSize,
+        normalizedValue,
+        interpolateColor(
+          1,
+          visualizationStore.settings.minColor,
+          visualizationStore.settings.maxColor,
+        ),
+        cellColor,
+      )
+      break
 
-        case 'dual-bar-charts':
-          drawDualBarChartsCell(
-            ctx,
-            x,
-            y,
-            cellSize,
-            normalizedValue,
-            interpolateColor(
-              1,
-              visualizationStore.settings.minColor,
-              visualizationStore.settings.maxColor,
-            ),
-            cellColor,
-          )
-          break
+    case 'hatched-bar-charts':
+      drawHatchedBarChartsCell(
+        ctx,
+        x,
+        y,
+        cellSize,
+        normalizedValue,
+        interpolateColor(
+          1,
+          visualizationStore.settings.minColor,
+          visualizationStore.settings.maxColor,
+        ),
+        cellColor,
+      )
+      break
 
-        case 'color':
-        default:
-          drawColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
-          break
-      }
+    case 'color':
+    default:
+      drawColorCell(ctx, x, y, cellSize, normalizedValue, cellColor)
+      break
+  }
 
       if (
         interactionStore.hoveredCell &&
@@ -410,6 +418,7 @@ const drawMatrix = () => {
       ctx.stroke()
     }
   }
+  minimapVersion.value++
 }
 
 onMounted(drawMatrix)
@@ -437,36 +446,51 @@ watch(
 </script>
 
 <template>
-  <div class="canvas-wrapper">
-    <canvas ref="canvasRef"></canvas>
-
-    <MatrixInteractionOverlay />
-
+  <div class="visualization-container">
     <div
-      v-if="interactionStore.hoveredCell && datasetStore.currentMatrix"
-      class="tooltip"
-      :style="{
-        left: interactionStore.mousePosition.x + 16 + 'px',
-        top: interactionStore.mousePosition.y + 16 + 'px',
-      }"
+      ref="wrapperRef"
+      class="canvas-wrapper"
     >
-      <strong>
-        {{ datasetStore.currentMatrix.rowNames[interactionStore.hoveredCell.row] }}
-        ×
-        {{ datasetStore.currentMatrix.columnNames[interactionStore.hoveredCell.col] }}
-      </strong>
-      <br />
-      Value:
-      {{
-        datasetStore.currentMatrix.values[interactionStore.hoveredCell.row][
-          interactionStore.hoveredCell.col
-        ].initialValue
-      }}
+      <canvas ref="canvasRef"></canvas>
+
+      <MatrixInteractionOverlay />
+
+      <div
+        v-if="interactionStore.hoveredCell && datasetStore.currentMatrix"
+        class="tooltip"
+        :style="{
+          left: interactionStore.mousePosition.x + 16 + 'px',
+          top: interactionStore.mousePosition.y + 16 + 'px',
+        }"
+      >
+        <strong>
+          {{ datasetStore.currentMatrix.rowNames[interactionStore.hoveredCell.row] }}
+          ×
+          {{ datasetStore.currentMatrix.columnNames[interactionStore.hoveredCell.col] }}
+        </strong>
+        <br />
+        Value:
+        {{
+          datasetStore.currentMatrix.values[interactionStore.hoveredCell.row][
+            interactionStore.hoveredCell.col
+          ].initialValue
+        }}
+      </div>
     </div>
+    <Minimap
+      :wrapper="wrapperRef"
+      :canvas="canvasRef"
+      :version="minimapVersion"
+    />
   </div>
 </template>
 
 <style scoped>
+.visualization-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
 .canvas-wrapper {
   position: relative;
   width: 100%;
