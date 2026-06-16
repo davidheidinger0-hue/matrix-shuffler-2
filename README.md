@@ -135,7 +135,7 @@ For customizing the build configuration, see the [Vite Configuration Reference](
 
 ## Acknowledgements
 
-We extend our gratitude to the original authors of the Matrix Shuffler repository for their excellent starting codebase: 
+We thank the original authors of the Matrix Shuffler repository for basis of our extension: 
 * Esma Karic
 * Andrej Knaus
 * Laura Thaçi
