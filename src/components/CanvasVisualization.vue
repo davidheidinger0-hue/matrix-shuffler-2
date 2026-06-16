@@ -13,6 +13,8 @@ const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 const visualizationStore = useVisualizationStore()
 
+const minimapVersion = ref(0)
+
 const padding = 140
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
@@ -392,6 +394,7 @@ const drawMatrix = () => {
       ctx.stroke()
     }
   }
+  minimapVersion.value++
 }
 
 onMounted(drawMatrix)
@@ -465,6 +468,7 @@ watch(
     <Minimap
       :wrapper="wrapperRef"
       :canvas="canvasRef"
+      :version="minimapVersion"
     />
   </div>
 </template>

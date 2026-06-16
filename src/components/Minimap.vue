@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 
 const props = defineProps<{
   wrapper: HTMLDivElement | null
   canvas: HTMLCanvasElement | null
+  version: number
 }>()
 const minimapCanvas = ref<HTMLCanvasElement | null>(null)
 const drawMinimap = () => {
@@ -88,6 +89,13 @@ onUnmounted(() => {
     handleScroll,
   )
 })
+
+watch(
+  () => props.version,
+  () => {
+    drawMinimap()
+  }
+)
 </script>
 
 <template>
