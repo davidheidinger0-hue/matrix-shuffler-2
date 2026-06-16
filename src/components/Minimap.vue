@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 
 const props = defineProps<{
   wrapper: HTMLDivElement | null
@@ -45,9 +45,6 @@ const drawMinimap = () => {
   canvas.width = MINIMAP_SIZE
   canvas.height = MINIMAP_SIZE
 
-  const minimapWidth = MINIMAP_SIZE
-  const minimapHeight = MINIMAP_SIZE
-
   const scale = getScale()
 
   const scaledWidth =
@@ -56,20 +53,26 @@ const drawMinimap = () => {
   const scaledHeight =
     mainCanvas.height * scale
 
+  const offsetX =
+    (MINIMAP_SIZE - scaledWidth) / 2
+
+  const offsetY =
+    (MINIMAP_SIZE - scaledHeight) / 2
+
   ctx.fillStyle = '#dddddd'
 
   ctx.fillRect(
-    0,
-    0,
+    offsetX,
+    offsetY,
     scaledWidth,
     scaledHeight,
   )
 
   const viewportX =
-    wrapper.scrollLeft * scale
+    offsetX + wrapper.scrollLeft * scale
 
   const viewportY =
-    wrapper.scrollTop * scale
+    offsetY + wrapper.scrollTop * scale
 
   const viewportWidth =
     wrapper.clientWidth * scale
@@ -144,26 +147,36 @@ const handleMouseMove = (event: MouseEvent) => {
     mouseY - dragState.offsetY
     const scale = getScale()
 
+  const scaledWidth =
+    props.canvas.width * scale
+  const scaledHeight =
+    props.canvas.height * scale
+  const offsetX =
+    (MINIMAP_SIZE - scaledWidth) / 2
+  const offsetY =
+    (MINIMAP_SIZE - scaledHeight) / 2
+
   const maxViewportX =
-    MINIMAP_SIZE - viewport.width
+  offsetX + scaledWidth - viewport.width
 
   const maxViewportY =
-    MINIMAP_SIZE - viewport.height
+    offsetY + scaledHeight - viewport.height
 
   const clampedViewportX = Math.max(
-    0,
+    offsetX,
     Math.min(newViewportX, maxViewportX),
   )
 
-const clampedViewportY = Math.max(
-  0,
-  Math.min(newViewportY, maxViewportY),
-)
+  const clampedViewportY = Math.max(
+    offsetY,
+    Math.min(newViewportY, maxViewportY),
+  )
+
   props.wrapper.scrollLeft =
-    clampedViewportX / scale
+    (clampedViewportX - offsetX) / scale
 
   props.wrapper.scrollTop =
-    clampedViewportY / scale
+    (clampedViewportY - offsetY) / scale
 }
 
 const getScale = () => {
@@ -179,7 +192,9 @@ const handleScroll = () => {
   drawMinimap()
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await nextTick()
+
   drawMinimap()
 
   props.wrapper?.addEventListener(
@@ -190,12 +205,12 @@ onMounted(() => {
   window.addEventListener(
     'mousemove',
     handleMouseMove,
-    )
+  )
 
   window.addEventListener(
     'mouseup',
     handleMouseUp,
-    )
+  )
 })
 
 onUnmounted(() => {
@@ -217,6 +232,13 @@ window.removeEventListener(
 
 watch(
   () => props.version,
+  () => {
+    drawMinimap()
+  }
+)
+
+watch(
+  () => props.canvas,
   () => {
     drawMinimap()
   }
