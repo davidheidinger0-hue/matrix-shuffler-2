@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue'
 
+defineOptions({
+  name: 'MiniMap'
+})
+
 const props = defineProps<{
   wrapper: HTMLDivElement | null
   canvas: HTMLCanvasElement | null
