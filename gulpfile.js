@@ -1,5 +1,5 @@
-const gulp = require('gulp');
-const { exec } = require('child_process');
+import gulp from 'gulp';
+import { exec } from 'child_process';
 
 gulp.task('tauri-build', (cb) => {
   exec('pnpm tauri build', (err, stdout, stderr) => {
@@ -10,7 +10,7 @@ gulp.task('tauri-build', (cb) => {
 });
 
 gulp.task('copy-exe', () => {
-  return gulp.src('src-tauri/target/release/matrix-shuffler2.exe')
+  return gulp.src('src-tauri/target/release/matrix-shuffler-2.exe')
     .pipe(gulp.dest('./')); 
 });
 
