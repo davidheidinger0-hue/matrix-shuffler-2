@@ -105,7 +105,7 @@ pnpm tauri dev
 
 ### 6. Build for Production
 
-To create a production desktop build:
+To create a production desktop build with the `.exe` in the root directory:
 
 ```bash
 pnpm tauri:build
