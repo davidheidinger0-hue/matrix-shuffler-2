@@ -698,7 +698,7 @@ const closeHowToUseModal = () => {
 .main-content {
   display: flex;
   height: 100%;
-  padding: 8px;
+  padding: 0;
   min-height: 0;
   overflow: hidden;
   flex-direction: column;
@@ -717,7 +717,7 @@ const closeHowToUseModal = () => {
 @media (min-width: 768px) {
   .main-content {
     flex-direction: row;
-    padding: 16px;
+    padding: 0;
   }
 
   .data-panel {
@@ -853,13 +853,27 @@ const closeHowToUseModal = () => {
 .resize-handle {
   position: absolute;
   top: 0;
-  right: 0;
-  width: 7px;
+  right: -6px;
+  width: 12px;
   height: 100%;
   cursor: ew-resize;
   background: transparent;
   z-index: 1400;
   transition: background 0.2s;
+
+  
+}
+
+.resize-handle::after {
+  content: '⋮⋮';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #1f6feb;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: -4px;
 }
 .resize-handle:hover {
   background: rgba(0, 0, 0, 0.07);
