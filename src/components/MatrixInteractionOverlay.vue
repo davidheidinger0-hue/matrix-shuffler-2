@@ -116,7 +116,7 @@ const handleMouseDown = (event: MouseEvent) => {
   const pos = getMousePosition(event)
 
   updateHoverState(pos.x, pos.y)
-
+  //label drag/drop
   if (interactionStore.hoveredLabel) {
     interactionStore.dragState = {
       type: interactionStore.hoveredLabel.type,
@@ -124,6 +124,27 @@ const handleMouseDown = (event: MouseEvent) => {
     }
 
     interactionStore.dragTargetIndex = interactionStore.hoveredLabel.index
+    return
+  }
+
+  //cell drag/drop
+  if (visualizationStore.settings.enableCellDragging &&
+    interactionStore.hoveredCell) {
+
+    const dragType = event.shiftKey ? 'column' : 'row'
+
+    interactionStore.dragState = {
+      type: dragType,
+      fromIndex:
+        dragType === 'row'
+          ? interactionStore.hoveredCell.row
+          : interactionStore.hoveredCell.col,
+    }
+
+    interactionStore.dragTargetIndex =
+      dragType === 'row'
+        ? interactionStore.hoveredCell.row
+        : interactionStore.hoveredCell.col
   }
 }
 
