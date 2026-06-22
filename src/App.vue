@@ -861,7 +861,7 @@ const closeHowToUseModal = () => {
   z-index: 1400;
   transition: background 0.2s;
 
-  
+
 }
 
 .resize-handle::after {
@@ -871,7 +871,7 @@ const closeHowToUseModal = () => {
   left: 50%;
   transform: translate(-50%, -50%);
   color: #1f6feb;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   letter-spacing: -4px;
 }
