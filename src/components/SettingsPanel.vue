@@ -492,7 +492,6 @@ onMounted(() => {
   color: var(--color-text);
   font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
