@@ -9,6 +9,7 @@ export interface VisualizationSettings {
   normalization: 'none' | 'row' | 'column' | 'global'
   labelRotation: number
   cellSize: number
+  enableCellDragging: boolean
 }
 
 export const useVisualizationStore = defineStore('visualization', {
@@ -35,6 +36,7 @@ export const useVisualizationStore = defineStore('visualization', {
       normalization: 'none',
       labelRotation: 45,
       cellSize: 40,
+      enableCellDragging: false,
     },
   }),
   actions: {
