@@ -235,7 +235,19 @@ const drawMatrix = () => {
   const dynamicTopPadding = layout.topPadding
   //
 
-  canvas.width = leftPadding + matrix.columnNames.length * cellSize + 80
+  //canvas.width = leftPadding + matrix.columnNames.length * cellSize + 80
+  const longestNameWidth = Math.max(
+  ...[...matrix.rowNames, ...matrix.columnNames].map((name) =>
+    ctx.measureText(name).width,
+  ),
+)
+
+const extraDragTooltipSpace = Math.max(120, longestNameWidth + 40)
+
+canvas.width =
+  leftPadding +
+  matrix.columnNames.length * cellSize +
+  extraDragTooltipSpace
   canvas.height = dynamicTopPadding + matrix.rowNames.length * cellSize + 80
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
