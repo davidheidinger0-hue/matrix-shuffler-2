@@ -45,8 +45,8 @@ jobs:
               tag_name: `v${process.env.PACKAGE_VERSION}`,
               name: `Matrix Shuffler v${process.env.PACKAGE_VERSION}`,
               body: 'Take a look at the assets to download and install this app.',
-              draft: true,
-              prerelease: false
+              draft: true,       
+              prerelease: false  
             })
             return data.id
 
@@ -135,22 +135,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload ${{ needs.create-release.outputs.tag_name }} ${{ env.ARCHIVE_PATH }}
 
-  publish-release:
-    permissions:
-      contents: write
-    runs-on: ubuntu-22.04
-    needs: [create-release, build-tauri]
-    steps:
-      - name: publish release
-        uses: actions/github-script@v6
-        env:
-          release_id: ${{ needs.create-release.outputs.release_id }}
-        with:
-          script: |
-            github.rest.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: process.env.release_id,
-              draft: true,
-              prerelease: false
-            })
