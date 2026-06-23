@@ -230,6 +230,31 @@ const stopResizeDataTablePanel = () => {
   window.removeEventListener('mouseup', stopResizeDataTablePanel)
 }
 
+const settingsPanelWidth = ref(340)
+const minSettingsPanelWidth = 340
+const maxSettingsPanelWidth = 800
+let isResizingSettingsPanel = false
+
+const startResizeSettingsPanel = () => {
+  isResizingSettingsPanel = true
+  document.body.style.cursor = 'ew-resize'
+  window.addEventListener('mousemove', resizeSettingsPanel)
+  window.addEventListener('mouseup', stopResizeSettingsPanel)
+}
+
+const resizeSettingsPanel = (e: MouseEvent) => {
+  if (!isResizingSettingsPanel) return
+  const newWidth = Math.min(maxSettingsPanelWidth, Math.max(minSettingsPanelWidth, window.innerWidth - e.clientX))
+  settingsPanelWidth.value = newWidth
+}
+
+const stopResizeSettingsPanel = () => {
+  isResizingSettingsPanel = false
+  document.body.style.cursor = ''
+  window.removeEventListener('mousemove', resizeSettingsPanel)
+  window.removeEventListener('mouseup', stopResizeSettingsPanel)
+}
+
 const exportDatasetAsCSV = () => {
   const matrix = datasetStore.currentMatrix
   if (!matrix || !matrix.rowNames.length || !matrix.columnNames.length) {
@@ -352,16 +377,7 @@ const closeHowToUseModal = () => {
         <div class="main-content">
           <!-- Data Table Panel -->
           <div>
-            <button
-              class="data-toggle-btn"
-              @click="toggleDataTablePanel"
-              :aria-expanded="showDataTablePanel"
-              :class="{ 'panel-open': showDataTablePanel }"
-              :style="showDataTablePanel ? `left: ${dataTablePanelWidth}px;` : 'left: 0;'"
-            >
-              {{ showDataTablePanel ? '❮' : '❯' }}
-            </button>
-            <transition name="slide-side-panel">
+            <transition name="slide-left-panel">
               <div
                 v-if="showDataTablePanel"
                 class="side-panel-data"
@@ -382,16 +398,25 @@ const closeHowToUseModal = () => {
             class="visualization-view"
             :style="{
               marginLeft: showDataTablePanel ? `${dataTablePanelWidth}px` : '0',
-              marginRight: showSettingsPanel ? '360px' : '0',
+              marginRight: showSettingsPanel ? `${settingsPanelWidth}px` : '0',
             }"
           >
             <div class="renderer-toolbar">
-            <label for="renderer-select">Renderer:</label>
+              <button class="chevron-btn chevron-left" @click="toggleDataTablePanel" :title="showDataTablePanel ? 'Hide Data' : 'Show Data'">
+                {{ showDataTablePanel ? '❮' : '❯' }}
+              </button>
+              
+              <div class="renderer-select-group">
+                <label for="renderer-select">Renderer:</label>
+                <select id="renderer-select" v-model="selectedRenderer">
+                  <option value="canvas">Canvas 2D</option>
+                  <option value="pixi">PixiJS</option>
+                </select>
+              </div>
 
-            <select id="renderer-select" v-model="selectedRenderer">
-            <option value="canvas">Canvas 2D</option>
-            <option value="pixi">PixiJS</option>
-            </select>
+              <button class="chevron-btn chevron-right" @click="toggleSettingsPanel" :title="showSettingsPanel ? 'Hide Settings' : 'Show Settings'">
+                {{ showSettingsPanel ? '❯' : '❮' }}
+              </button>
             </div>
 
             <CanvasVisualization v-if="selectedRenderer === 'canvas'" />
@@ -404,24 +429,18 @@ const closeHowToUseModal = () => {
           </div>
         </div>
 
-        <button
-          class="settings-toggle-btn"
-          @click="toggleSettingsPanel"
-          :aria-expanded="showSettingsPanel"
-          :class="{ 'panel-open': showSettingsPanel }"
-          :style="showSettingsPanel ? 'right: 360px;' : 'right: 0;'"
-        >
-          {{ showSettingsPanel ? '❯' : '❮' }}
-        </button>
         <transition name="slide-side-panel">
-          <div v-if="showSettingsPanel" class="side-panel">
+          <div v-if="showSettingsPanel" class="side-panel" :style="`width: ${settingsPanelWidth}px;`">
+            <div
+              class="resize-handle-left"
+              @mousedown="startResizeSettingsPanel"
+              title="Resize panel"
+            ></div>
             <SettingsPanel />
           </div>
         </transition>
       </div>
     </main>
-
-    <SettingsPanel v-if="showSettingsPanel" />
 
     <div v-if="showImportModal" class="modal-overlay" @click.self="closeImportModal">
       <div class="modal-content">
@@ -528,12 +547,42 @@ const closeHowToUseModal = () => {
 
 .renderer-toolbar {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
   align-items: center;
-  padding: 8px;
-  padding-left: 70px;
+  padding: 8px 0;
   background: white;
   border-bottom: 1px solid #ddd;
+}
+
+.renderer-select-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chevron-btn {
+  background-color: var(--color-primary-light);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chevron-btn:hover {
+  background-color: var(--color-primary);
+}
+
+.chevron-left {
+  border-radius: 0 8px 8px 0;
+}
+
+.chevron-right {
+  border-radius: 8px 0 0 8px;
 }
 
 .app-container {
@@ -753,50 +802,6 @@ const closeHowToUseModal = () => {
   transition: margin 0.3s ease;
 }
 
-.settings-toggle-btn {
-  position: fixed;
-  top: 80px;
-  right: 0;
-  z-index: 1200;
-  background: var(--color-primary-light);
-  color: white;
-  border: none;
-  border-radius: 8px 0 0 8px;
-  padding: 12px 16px;
-  font-size: 22px;
-  cursor: pointer;
-  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.08);
-  transition: background 0.2s;
-}
-
-.settings-toggle-btn.panel-open {
-  right: 340px;
-}
-
-.data-toggle-btn {
-  position: fixed;
-  top: 80px;
-  left: 0;
-  z-index: 1200;
-  background: var(--color-primary-light);
-  color: white;
-  border: none;
-  border-radius: 0 8px 8px 0;
-  padding: 12px 16px;
-  font-size: 22px;
-  cursor: pointer;
-  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.08);
-  transition: background 0.2s;
-}
-
-.data-toggle-btn.panel-open {
-  left: 340px;
-}
-
-.data-toggle-btn[aria-expanded='true'] {
-  background: var(--color-primary);
-}
-
 .side-panel {
   position: fixed;
   top: 52px;
@@ -838,6 +843,12 @@ const closeHowToUseModal = () => {
   z-index: 1400;
 }
 
+/* Right side panel transition */
+.slide-side-panel-enter-active,
+.slide-side-panel-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
 .slide-side-panel-enter-from,
 .slide-side-panel-leave-to {
   transform: translateX(100%);
@@ -846,6 +857,24 @@ const closeHowToUseModal = () => {
 
 .slide-side-panel-enter-to,
 .slide-side-panel-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Left side panel transition */
+.slide-left-panel-enter-active,
+.slide-left-panel-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.slide-left-panel-enter-from,
+.slide-left-panel-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.slide-left-panel-enter-to,
+.slide-left-panel-leave-from {
   transform: translateX(0);
   opacity: 1;
 }
@@ -876,6 +905,33 @@ const closeHowToUseModal = () => {
   letter-spacing: -4px;
 }
 .resize-handle:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.resize-handle-left {
+  position: absolute;
+  top: 0;
+  left: -6px;
+  width: 12px;
+  height: 100%;
+  cursor: ew-resize;
+  background: transparent;
+  z-index: 1400;
+  transition: background 0.2s;
+}
+
+.resize-handle-left::after {
+  content: '⋮⋮';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #1f6feb;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: -4px;
+}
+.resize-handle-left:hover {
   background: rgba(0, 0, 0, 0.07);
 }
 

@@ -35,13 +35,34 @@ const dragState = {
 }
 const panelDrag = {
   active: false,
-  offsetX: 0,
-  offsetY: 0,
+  startX: 0,
+  startY: 0,
+  startPosX: 0,
+  startPosY: 0,
 }
-const position = reactive({
-  x: 60,
-  y: 20,
+const desiredPosition = reactive({
+  x: 0,
+  y: 0,
 })
+const position = reactive({
+  x: 0,
+  y: 0,
+})
+
+const updateVisualPosition = () => {
+  if (!props.wrapper) return
+  const W = props.wrapper.clientWidth
+  const H = props.wrapper.clientHeight
+  
+  const min_x = 20 - W / 2
+  const max_x = W / 2 - 200
+  
+  const min_y = 20 - H / 2
+  const max_y = H / 2 - 200
+
+  position.x = Math.max(min_x, Math.min(desiredPosition.x, max_x))
+  position.y = Math.max(min_y, Math.min(desiredPosition.y, max_y))
+}
 
 const drawMinimap = () => {
   const mainCanvas = props.canvas
@@ -207,8 +228,13 @@ const getScale = () => {
 const handlePanelMouseDown = (event: MouseEvent) => {
   panelDrag.active = true
 
-  panelDrag.offsetX = event.clientX - position.x
-  panelDrag.offsetY = event.clientY - position.y
+  desiredPosition.x = position.x
+  desiredPosition.y = position.y
+
+  panelDrag.startX = event.clientX
+  panelDrag.startY = event.clientY
+  panelDrag.startPosX = desiredPosition.x
+  panelDrag.startPosY = desiredPosition.y
 
   window.addEventListener('mousemove', handlePanelMouseMove)
   window.addEventListener('mouseup', handlePanelMouseUp)
@@ -217,8 +243,13 @@ const handlePanelMouseDown = (event: MouseEvent) => {
 const handlePanelMouseMove = (event: MouseEvent) => {
   if (!panelDrag.active) return
 
-  position.x = event.clientX - panelDrag.offsetX
-  position.y = event.clientY - panelDrag.offsetY
+  const deltaX = event.clientX - panelDrag.startX
+  const deltaY = event.clientY - panelDrag.startY
+
+  desiredPosition.x = panelDrag.startPosX + deltaX
+  desiredPosition.y = panelDrag.startPosY + deltaY
+  
+  updateVisualPosition()
 }
 
 const handlePanelMouseUp = () => {
@@ -232,8 +263,19 @@ const handleScroll = () => {
   drawMinimap()
 }
 
+let resizeObserver: ResizeObserver | null = null
+
 onMounted(async () => {
   await nextTick()
+
+  if (props.wrapper) {
+    // Start it near top right initially
+    const W = props.wrapper.clientWidth
+    const H = props.wrapper.clientHeight
+    desiredPosition.x = W / 2 - 200
+    desiredPosition.y = 20 - H / 2
+    updateVisualPosition()
+  }
 
   drawMinimap()
 
@@ -242,15 +284,17 @@ onMounted(async () => {
     handleScroll,
   )
 
-  /*window.addEventListener(
-    'mousemove',
-    handleMouseMove,
-  )*/
-
   window.addEventListener(
     'mouseup',
     handleMouseUp,
   )
+
+  if (props.wrapper) {
+    resizeObserver = new ResizeObserver(() => {
+      updateVisualPosition()
+    })
+    resizeObserver.observe(props.wrapper)
+  }
 })
 
 onUnmounted(() => {
@@ -259,15 +303,14 @@ onUnmounted(() => {
     handleScroll,
   )
 
-  /*window.removeEventListener(
-  'mousemove',
-  handleMouseMove,
-  )*/
-
-window.removeEventListener(
+  window.removeEventListener(
   'mouseup',
   handleMouseUp,
   )
+
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
 })
 
 watch(
@@ -288,7 +331,7 @@ watch(
 <template>
   <div
     class="minimap"
-    :style="{ left: position.x + 'px', top: position.y + 'px' }"
+    :style="{ left: `calc(50% + ${position.x}px)`, top: `calc(50% + ${position.y}px)` }"
   >
     <div
       class="minimap-handle"
@@ -307,9 +350,6 @@ watch(
 <style scoped>
 .minimap {
   position: absolute;
-  right: 20px;
-  bottom: 60px;
-
   width: 180px;
   height: 180px;
   display: flex;
@@ -318,7 +358,7 @@ watch(
   background: white;
   border: 1px solid #ccc;
 
-  z-index: 9999;
+  z-index: 1100;
 }
 .minimap-handle {
   height: 24px;

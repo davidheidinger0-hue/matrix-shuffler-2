@@ -504,7 +504,35 @@ const extraDragTooltipSpace = Math.max(120, longestNameWidth + 40)
   minimapVersion.value++
 }
 
-onMounted(drawMatrix)
+let resizeObserver: ResizeObserver | null = null
+let lastWrapperWidth = 0
+
+onMounted(() => {
+  drawMatrix()
+  
+  if (wrapperRef.value) {
+    lastWrapperWidth = wrapperRef.value.clientWidth
+    resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === wrapperRef.value) {
+          const newWidth = entry.contentRect.width
+          if (lastWrapperWidth > 0 && newWidth > 0 && lastWrapperWidth !== newWidth) {
+            const deltaWidth = newWidth - lastWrapperWidth
+            panX.value += deltaWidth / 2
+          }
+          lastWrapperWidth = newWidth
+        }
+      }
+    })
+    resizeObserver.observe(wrapperRef.value)
+  }
+})
+
+onUnmounted(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
+})
 
 watch(
   () => datasetStore.initialData,

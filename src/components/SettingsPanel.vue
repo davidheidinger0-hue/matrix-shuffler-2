@@ -318,21 +318,11 @@ onMounted(() => {
   border-bottom: 1px solid var(--color-border);
 }
 .settings-panel {
-  position: fixed;
-  top: 52px;
-  right: 0;
-  width: 360px;
-  height: calc(100vh - 52px);
+  width: 100%;
+  height: 100%;
   background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 8px 0 0 8px;
-  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1001;
-  transition: transform 0.3s ease;
-}
-
-.settings-panel.panel-open {
-  transform: translateX(0);
+  display: flex;
+  flex-direction: column;
 }
 
 .panel-header {
