@@ -420,7 +420,8 @@ canvas.width =
 
     ctx.fillStyle = '#1f6feb'
     ctx.globalAlpha = 0.65
-    ctx.font = `${visualizationStore.config.labelSize || 14}px Arial`
+    const fontSize = Math.max(10, (visualizationStore.config.labelSize || 14) - 2)
+    ctx.font = `${fontSize}px Arial`
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
 
@@ -436,17 +437,17 @@ canvas.width =
 
       ctx.fillStyle = 'rgba(31,111,235,0.15)'
       ctx.fillRect(
-        leftPadding - textWidth - 20,
-        y - 16,
-        textWidth + 12,
-        22,
+        leftPadding - textWidth - 16,
+        y - 9,
+        textWidth + 8,
+        18,
       )
 
       ctx.fillStyle = '#1f6feb'
       ctx.fillText(
         draggedName,
-        leftPadding - textWidth - 14,
-        y - 5,
+        leftPadding - textWidth - 12,
+        y,
       )
     }
 
@@ -460,20 +461,27 @@ canvas.width =
       //ctx.fillText(draggedName, x + 8, dynamicTopPadding - 35)
       const textWidth = ctx.measureText(draggedName).width
 
+      const maxColNameWidth = Math.max(...matrix.columnNames.map(n => ctx.measureText(n).width))
+      const angleRad = getLabelRotation() * Math.PI / 180
+      const maxColNameHeight = maxColNameWidth * Math.sin(angleRad)
+      const tooltipYCenter = dynamicTopPadding - 10 - maxColNameHeight - 26
+
       ctx.fillStyle = 'rgba(31,111,235,0.15)'
       ctx.fillRect(
-        x + 6,
-        dynamicTopPadding - 52,
-        textWidth + 12,
-        22,
+        x - (textWidth + 8) / 2,
+        tooltipYCenter - 9,
+        textWidth + 8,
+        18,
       )
 
+      ctx.textAlign = 'center'
       ctx.fillStyle = '#1f6feb'
       ctx.fillText(
         draggedName,
-        x + 12,
-        dynamicTopPadding - 40,
+        x,
+        tooltipYCenter,
       )
+      ctx.textAlign = 'left'
     }
     ctx.globalAlpha = 1
   }
