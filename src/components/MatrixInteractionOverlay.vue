@@ -9,6 +9,15 @@ const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
+type PendingCellDrag = {
+  row: number
+  col: number
+  startX: number
+  startY: number
+} | null
+
+let pendingCellDrag: PendingCellDrag = null
+const cellDragThreshold = 6
 
 const getCurrentLayout = () => {
   const matrix = datasetStore.currentMatrix
@@ -90,7 +99,30 @@ const handleMouseMove = (event: MouseEvent) => {
   const pos = getMousePosition(event)
 
   interactionStore.mousePosition = pos
+  //
+  if (pendingCellDrag &&
+    visualizationStore.settings.enableCellDragging &&
+    !interactionStore.dragState) {
 
+    const dx = pos.x - pendingCellDrag.startX
+    const dy = pos.y - pendingCellDrag.startY
+
+    if (Math.max(Math.abs(dx), Math.abs(dy)) >= cellDragThreshold) {
+      const dragType = Math.abs(dx) > Math.abs(dy) ? 'column' : 'row'
+
+      interactionStore.dragState = {
+        type: dragType,
+        fromIndex: dragType === 'row' ? pendingCellDrag.row : pendingCellDrag.col,
+      }
+
+      interactionStore.dragTargetIndex =
+        dragType === 'row' ? pendingCellDrag.row : pendingCellDrag.col
+
+      pendingCellDrag = null
+    }
+  }
+
+   //
   updateHoverState(pos.x, pos.y)
 
   if (interactionStore.dragState?.type === 'row') {
@@ -115,6 +147,7 @@ const handleMouseMove = (event: MouseEvent) => {
 const handleMouseDown = (event: MouseEvent) => {
   const pos = getMousePosition(event)
 
+  pendingCellDrag = null
   updateHoverState(pos.x, pos.y)
   //label drag/drop
   if (interactionStore.hoveredLabel) {
@@ -131,7 +164,7 @@ const handleMouseDown = (event: MouseEvent) => {
   if (visualizationStore.settings.enableCellDragging &&
     interactionStore.hoveredCell) {
 
-    const dragType = event.shiftKey ? 'column' : 'row'
+    /*const dragType = event.shiftKey ? 'column' : 'row'
 
     interactionStore.dragState = {
       type: dragType,
@@ -145,10 +178,19 @@ const handleMouseDown = (event: MouseEvent) => {
       dragType === 'row'
         ? interactionStore.hoveredCell.row
         : interactionStore.hoveredCell.col
-  }
+  }*/
+  pendingCellDrag = {
+        row: interactionStore.hoveredCell.row,
+        col: interactionStore.hoveredCell.col,
+        startX: pos.x,
+        startY: pos.y,
+      }
+}
 }
 
 const handleMouseUp = () => {
+  pendingCellDrag = null
+
   if (!interactionStore.dragState || interactionStore.dragTargetIndex === null) {
     interactionStore.clearDrag()
     return
@@ -180,6 +222,7 @@ const handleMouseUp = () => {
 }
 
 const handleMouseLeave = () => {
+  pendingCellDrag = null
   interactionStore.clearInteraction()
 }
 </script>
