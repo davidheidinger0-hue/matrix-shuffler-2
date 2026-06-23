@@ -17,15 +17,23 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       release_id: ${{ steps.create-release.outputs.result }}
+      tag_name: ${{ steps.get-version.outputs.tag_name }}
 
     steps:
       - uses: actions/checkout@v4
+      
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          
       - name: get version
-        run: echo "PACKAGE_VERSION=$(node -pe "require('./package.json').version")" >> $GITHUB_ENV
+        id: get-version
+        run: |
+          VERSION=$(node -pe "require('./package.json').version")
+          echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "tag_name=v$VERSION" >> $GITHUB_OUTPUT
+          
       - name: create release
         id: create-release
         uses: actions/github-script@v6
@@ -77,21 +85,63 @@ jobs:
       - name: install frontend dependencies
         run: pnpm install
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri App
+        id: tauri_build
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package Assets into Folders
+        uses: actions/github-script@v6
         with:
-          releaseId: ${{ needs.create-release.outputs.release_id }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const { execSync } = require('child_process');
+
+            const platform = '${{ matrix.platform }}';
+            const osMap = {
+              'windows-latest': 'Windows',
+              'macos-latest': 'Apple',
+              'ubuntu-22.04': 'Linux'
+            };
+            const folderName = `Matrix-Shuffler-${osMap[platform]}`;
+            fs.mkdirSync(folderName, { recursive: true });
+
+            const artifacts = ${{ steps.tauri_build.outputs.artifactPaths }};
+            for (const artifact of artifacts) {
+              const fileName = path.basename(artifact);
+              fs.cpSync(artifact, path.join(folderName, fileName), { recursive: true });
+            }
+
+            const exeName = platform === 'windows-latest' ? 'matrix-shuffler.exe' : 'matrix-shuffler'; 
+            const exePath = path.join('src-tauri', 'target', 'release', exeName);
+            if (fs.existsSync(exePath)) {
+              fs.cpSync(exePath, path.join(folderName, exeName));
+            }
+
+            const archiveName = platform === 'windows-latest' ? `${folderName}.zip` : `${folderName}.tar.gz`;
+            
+            if (platform === 'windows-latest') {
+              execSync(`7z a ${archiveName} ${folderName}`);
+            } else {
+              execSync(`tar -czvf ${archiveName} ${folderName}`);
+            }
+
+            fs.appendFileSync(process.env.GITHUB_ENV, `ARCHIVE_PATH=${archiveName}\n`);
+
+      - name: Upload Archive to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ needs.create-release.outputs.tag_name }} ${{ env.ARCHIVE_PATH }}
 
   publish-release:
     permissions:
       contents: write
     runs-on: ubuntu-22.04
     needs: [create-release, build-tauri]
-
     steps:
       - name: publish release
-        id: publish-release
         uses: actions/github-script@v6
         env:
           release_id: ${{ needs.create-release.outputs.release_id }}
@@ -103,4 +153,4 @@ jobs:
               release_id: process.env.release_id,
               draft: false,
               prerelease: false
-            }) 
+            })

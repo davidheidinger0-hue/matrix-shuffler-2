@@ -235,7 +235,19 @@ const drawMatrix = () => {
   const dynamicTopPadding = layout.topPadding
   //
 
-  canvas.width = leftPadding + matrix.columnNames.length * cellSize + 80
+  //canvas.width = leftPadding + matrix.columnNames.length * cellSize + 80
+  const longestNameWidth = Math.max(
+  ...[...matrix.rowNames, ...matrix.columnNames].map((name) =>
+    ctx.measureText(name).width,
+  ),
+)
+
+const extraDragTooltipSpace = Math.max(120, longestNameWidth + 40)
+
+canvas.width =
+  leftPadding +
+  matrix.columnNames.length * cellSize +
+  extraDragTooltipSpace
   canvas.height = dynamicTopPadding + matrix.rowNames.length * cellSize + 80
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -398,9 +410,19 @@ const drawMatrix = () => {
     })
   })
 
+  //
   if (interactionStore.dragState && interactionStore.dragTargetIndex !== null) {
+    const draggedName = interactionStore.dragState.type === 'row' ? matrix.rowNames[interactionStore.dragState.fromIndex]
+      : matrix.columnNames[interactionStore.dragState.fromIndex]
+
     ctx.strokeStyle = '#1f6feb'
     ctx.lineWidth = 3
+
+    ctx.fillStyle = '#1f6feb'
+    ctx.globalAlpha = 0.65
+    ctx.font = `${visualizationStore.config.labelSize || 14}px Arial`
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
 
     if (interactionStore.dragState.type === 'row') {
       const y = dynamicTopPadding + interactionStore.dragTargetIndex * cellSize
@@ -408,6 +430,24 @@ const drawMatrix = () => {
       ctx.moveTo(leftPadding, y)
       ctx.lineTo(leftPadding + matrix.columnNames.length * cellSize, y)
       ctx.stroke()
+
+      //ctx.fillText(draggedName, leftPadding - 70, y - 8)
+      const textWidth = ctx.measureText(draggedName).width
+
+      ctx.fillStyle = 'rgba(31,111,235,0.15)'
+      ctx.fillRect(
+        leftPadding - textWidth - 20,
+        y - 16,
+        textWidth + 12,
+        22,
+      )
+
+      ctx.fillStyle = '#1f6feb'
+      ctx.fillText(
+        draggedName,
+        leftPadding - textWidth - 14,
+        y - 5,
+      )
     }
 
     if (interactionStore.dragState.type === 'column') {
@@ -416,8 +456,28 @@ const drawMatrix = () => {
       ctx.moveTo(x, dynamicTopPadding)
       ctx.lineTo(x, dynamicTopPadding + matrix.rowNames.length * cellSize)
       ctx.stroke()
+
+      //ctx.fillText(draggedName, x + 8, dynamicTopPadding - 35)
+      const textWidth = ctx.measureText(draggedName).width
+
+      ctx.fillStyle = 'rgba(31,111,235,0.15)'
+      ctx.fillRect(
+        x + 6,
+        dynamicTopPadding - 52,
+        textWidth + 12,
+        22,
+      )
+
+      ctx.fillStyle = '#1f6feb'
+      ctx.fillText(
+        draggedName,
+        x + 12,
+        dynamicTopPadding - 40,
+      )
     }
+    ctx.globalAlpha = 1
   }
+  //
   minimapVersion.value++
 }
 
