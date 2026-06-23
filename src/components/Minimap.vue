@@ -9,6 +9,8 @@ const props = defineProps<{
   wrapper: HTMLDivElement | null
   canvas: HTMLCanvasElement | null
   version: number
+  panX: number
+  panY: number
 }>()
 const minimapCanvas = ref<HTMLCanvasElement | null>(null)
 const MINIMAP_SIZE = 180
@@ -82,10 +84,10 @@ const drawMinimap = () => {
   )
 
   const viewportX =
-    offsetX + wrapper.scrollLeft * scale
+    offsetX - props.panX * scale
 
   const viewportY =
-    offsetY + wrapper.scrollTop * scale
+    offsetY - props.panY * scale
 
   const viewportWidth =
     wrapper.clientWidth * scale

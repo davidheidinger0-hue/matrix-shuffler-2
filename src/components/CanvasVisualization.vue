@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useDatasetStore } from '@/stores/dataset'
 import { useInteractionStore } from '@/stores/interaction'
 import { useVisualizationStore } from '@/stores/visualization'
@@ -8,13 +8,17 @@ import Minimap from './Minimap.vue'
 import { getMatrixLayout } from '@/utils/matrixLayout'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const wrapperRef = ref<HTMLDivElement | null>(null)
+  const wrapperRef = ref<HTMLDivElement | null>(null)
 
 const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
 const visualizationStore = useVisualizationStore()
 
 const minimapVersion = ref(0)
+const zoomScale = ref(1)
+const panX = ref(0)
+const panY = ref(0)
+const hasInitiallyCentered = ref(false)
 
 //const minTopPadding = 140
 const rowLabelMargin = 20
@@ -244,13 +248,24 @@ const drawMatrix = () => {
 
 const extraDragTooltipSpace = Math.max(120, longestNameWidth + 40)
 
-canvas.width =
-  leftPadding +
-  matrix.columnNames.length * cellSize +
-  extraDragTooltipSpace
-  canvas.height = dynamicTopPadding + matrix.rowNames.length * cellSize + 80
+  canvas.width = (leftPadding + matrix.columnNames.length * cellSize + extraDragTooltipSpace) * zoomScale.value
+  canvas.height = (dynamicTopPadding + matrix.rowNames.length * cellSize + 80) * zoomScale.value
+
+  if (!hasInitiallyCentered.value && wrapperRef.value) {
+    const wrapper = wrapperRef.value
+    if (wrapper.clientWidth > 0 && wrapper.clientHeight > 0) {
+      panX.value = (wrapper.clientWidth - canvas.width) / 2
+      
+      const targetRow = Math.min(3, matrix.rowNames.length > 0 ? matrix.rowNames.length - 1 : 0)
+      const targetYCanvas = (dynamicTopPadding + targetRow * cellSize + cellSize / 2) * zoomScale.value
+      panY.value = wrapper.clientHeight / 2 - targetYCanvas
+      
+      hasInitiallyCentered.value = true
+    }
+  }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.scale(zoomScale.value, zoomScale.value)
 
   // Canvas resets context state after resizing, so restore font settings.
   ctx.font = `${visualizationStore.config.labelSize}px Arial`
@@ -492,13 +507,37 @@ canvas.width =
 onMounted(drawMatrix)
 
 watch(
+  () => datasetStore.initialData,
+  () => {
+    hasInitiallyCentered.value = false
+  }
+)
+
+watch(
+  () => datasetStore.currentMatrix,
+  () => drawMatrix(),
+  { deep: true },
+)
+
+watch(
   [
-    () => datasetStore.currentMatrix,
     () => visualizationStore.settings,
     () => visualizationStore.config.encoding,
   ],
   () => drawMatrix(),
   { deep: true },
+)
+
+watch(
+  zoomScale,
+  () => drawMatrix(),
+)
+
+watch(
+  () => [panX.value, panY.value],
+  () => {
+    minimapVersion.value++ // Trigger minimap redraw when panning
+  }
 )
 
 watch(
@@ -511,6 +550,73 @@ watch(
   () => drawMatrix(),
   { deep: true },
 )
+
+const handleWheel = (e: WheelEvent) => {
+  const zoomFactor = 0.05
+  const scaleChange = e.deltaY < 0 ? (1 + zoomFactor) : (1 - zoomFactor)
+  let newScale = zoomScale.value * scaleChange
+  newScale = Math.max(0.2, Math.min(newScale, 5))
+
+  if (newScale === zoomScale.value) return
+
+  const wrapper = wrapperRef.value
+  if (!wrapper) return
+
+  const rect = wrapper.getBoundingClientRect()
+  const mouseX = e.clientX - rect.left
+  const mouseY = e.clientY - rect.top
+
+  const matrixX = (mouseX - panX.value) / zoomScale.value
+  const matrixY = (mouseY - panY.value) / zoomScale.value
+
+  const scaleRatio = newScale / zoomScale.value
+  zoomScale.value = newScale
+
+  panX.value = mouseX - matrixX * newScale
+  panY.value = mouseY - matrixY * newScale
+}
+
+const isPanning = ref(false)
+const lastPanPos = ref({ x: 0, y: 0 })
+
+const handleWrapperMouseDown = (e: MouseEvent) => {
+  if (e.button === 1) {
+    e.preventDefault()
+    isPanning.value = true
+    lastPanPos.value = { x: e.clientX, y: e.clientY }
+    document.body.style.cursor = 'grabbing'
+    window.addEventListener('mousemove', handleWrapperMouseMove)
+    window.addEventListener('mouseup', handleWrapperMouseUp)
+  }
+}
+
+const handleWrapperMouseMove = (e: MouseEvent) => {
+  if (!isPanning.value) return
+  const wrapper = wrapperRef.value
+  if (!wrapper) return
+
+  const dx = e.clientX - lastPanPos.value.x
+  const dy = e.clientY - lastPanPos.value.y
+
+  panX.value += dx
+  panY.value += dy
+
+  lastPanPos.value = { x: e.clientX, y: e.clientY }
+}
+
+const handleWrapperMouseUp = (e: MouseEvent) => {
+  if (e.button === 1 || isPanning.value) {
+    isPanning.value = false
+    document.body.style.cursor = ''
+    window.removeEventListener('mousemove', handleWrapperMouseMove)
+    window.removeEventListener('mouseup', handleWrapperMouseUp)
+  }
+}
+
+onUnmounted(() => {
+  window.removeEventListener('mousemove', handleWrapperMouseMove)
+  window.removeEventListener('mouseup', handleWrapperMouseUp)
+})
 </script>
 
 <template>
@@ -518,17 +624,19 @@ watch(
     <div
       ref="wrapperRef"
       class="canvas-wrapper"
+      @wheel.prevent="handleWheel"
+      @mousedown="handleWrapperMouseDown"
     >
-      <canvas ref="canvasRef"></canvas>
+      <canvas ref="canvasRef" :style="{ transform: `translate(${panX}px, ${panY}px)`, transformOrigin: '0 0' }"></canvas>
 
-      <MatrixInteractionOverlay />
+      <MatrixInteractionOverlay :zoom-scale="zoomScale" :pan-x="panX" :pan-y="panY" />
 
       <div
         v-if="interactionStore.hoveredCell && datasetStore.currentMatrix"
         class="tooltip"
         :style="{
-          left: interactionStore.mousePosition.x + 16 + 'px',
-          top: interactionStore.mousePosition.y + 16 + 'px',
+          left: interactionStore.mousePosition.x * zoomScale + panX + 16 + 'px',
+          top: interactionStore.mousePosition.y * zoomScale + panY + 16 + 'px',
         }"
       >
         <strong>
@@ -549,6 +657,8 @@ watch(
       :wrapper="wrapperRef"
       :canvas="canvasRef"
       :version="minimapVersion"
+      :pan-x="panX"
+      :pan-y="panY"
     />
   </div>
 </template>
@@ -563,7 +673,7 @@ watch(
   position: relative;
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
   background: white;
 }
 

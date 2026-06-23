@@ -21,13 +21,19 @@ const getCurrentLayout = () => {
   })
 }
 
+const props = defineProps({
+  zoomScale: { type: Number, default: 1 },
+  panX: { type: Number, default: 0 },
+  panY: { type: Number, default: 0 },
+})
+
 const getMousePosition = (event: MouseEvent) => {
   const target = event.currentTarget as HTMLDivElement
   const rect = target.getBoundingClientRect()
 
   return {
-    x: event.clientX - rect.left,
-    y: event.clientY - rect.top,
+    x: (event.clientX - rect.left - props.panX) / props.zoomScale,
+    y: (event.clientY - rect.top - props.panY) / props.zoomScale,
   }
 }
 
