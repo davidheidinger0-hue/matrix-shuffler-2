@@ -15,6 +15,9 @@ const interactionStore = useInteractionStore()
 const visualizationStore = useVisualizationStore()
 
 const minimapVersion = ref(0)
+const props = defineProps<{
+  showMinimap: boolean
+}>()
 
 //const minTopPadding = 140
 const rowLabelMargin = 20
@@ -526,6 +529,7 @@ watch(
       </div>
     </div>
     <Minimap
+      v-show="props.showMinimap"
       :wrapper="wrapperRef"
       :canvas="canvasRef"
       :version="minimapVersion"
