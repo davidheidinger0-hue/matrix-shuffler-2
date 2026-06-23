@@ -45,8 +45,8 @@ jobs:
               tag_name: `v${process.env.PACKAGE_VERSION}`,
               name: `Matrix Shuffler v${process.env.PACKAGE_VERSION}`,
               body: 'Take a look at the assets to download and install this app.',
-              draft: true,       
-              prerelease: false  
+              draft: true,
+              prerelease: false
             })
             return data.id
 
@@ -88,11 +88,11 @@ jobs:
       - name: Build Tauri App
         id: tauri_build
         uses: tauri-apps/tauri-action@v0
+
+      - name: Rename and Upload Assets
+        uses: actions/github-script@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Package Assets into Folders
-        uses: actions/github-script@v6
         with:
           script: |
             const fs = require('fs');
@@ -102,36 +102,29 @@ jobs:
             const platform = '${{ matrix.platform }}';
             const osMap = {
               'windows-latest': 'Windows',
-              'macos-latest': 'Apple',
-              'ubuntu-22.04': 'Linux'
+              'macos-latest': 'macOS',
+              'ubuntu-22.04': 'Ubuntu'
             };
-            const folderName = `Matrix-Shuffler-${osMap[platform]}`;
-            fs.mkdirSync(folderName, { recursive: true });
+            const baseName = osMap[platform];
 
             const artifacts = ${{ steps.tauri_build.outputs.artifactPaths }};
             for (const artifact of artifacts) {
               const fileName = path.basename(artifact);
-              fs.cpSync(artifact, path.join(folderName, fileName), { recursive: true });
+              
+              let arch = 'x64';
+              if (fileName.includes('aarch64')) arch = 'aarch64';
+              else if (fileName.includes('arm64')) arch = 'arm64';
+
+              let ext = '';
+              if (fileName.endsWith('.tar.gz')) {
+                ext = fileName.endsWith('.app.tar.gz') ? '.app.tar.gz' : '.tar.gz';
+              } else {
+                ext = fileName.substring(fileName.indexOf('.'));
+              }
+              
+              const newName = `${baseName}-${arch}${ext}`;
+              const newPath = path.join(path.dirname(artifact), newName);
+              fs.renameSync(artifact, newPath);
+              
+              execSync(`gh release upload ${{ needs.create-release.outputs.tag_name }} "${newPath}"`, { stdio: 'inherit' });
             }
-
-            const exeName = platform === 'windows-latest' ? 'matrix-shuffler.exe' : 'matrix-shuffler'; 
-            const exePath = path.join('src-tauri', 'target', 'release', exeName);
-            if (fs.existsSync(exePath)) {
-              fs.cpSync(exePath, path.join(folderName, exeName));
-            }
-
-            const archiveName = platform === 'windows-latest' ? `${folderName}.zip` : `${folderName}.tar.gz`;
-            
-            if (platform === 'windows-latest') {
-              execSync(`7z a ${archiveName} ${folderName}`);
-            } else {
-              execSync(`tar -czvf ${archiveName} ${folderName}`);
-            }
-
-            fs.appendFileSync(process.env.GITHUB_ENV, `ARCHIVE_PATH=${archiveName}\n`);
-
-      - name: Upload Archive to GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ needs.create-release.outputs.tag_name }} ${{ env.ARCHIVE_PATH }}
-
