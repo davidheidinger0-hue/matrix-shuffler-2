@@ -330,7 +330,7 @@ const closeHowToUseModal = () => {
           <li class="dropdown">
             <a href="#" class="dropbtn">Actions</a>
             <div class="dropdown-content">
-              <a href="#" @click.prevent="resetDataOrder">Reset Data Order</a>
+              <a href="#" @click.prevent="resetDataOrder">Original Data Order</a>
               <a href="#" @click.prevent="apply2DSort">2D Sort</a>
               <a href="#" @click.prevent="handleTranspose">Transpose Matrix</a>
             </div>
