@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useDatasetStore } from '@/stores/dataset'
 import { useInteractionStore } from '@/stores/interaction'
 import { useVisualizationStore } from '@/stores/visualization'
@@ -597,7 +597,6 @@ const handleWheel = (e: WheelEvent) => {
   const matrixX = (mouseX - panX.value) / zoomScale.value
   const matrixY = (mouseY - panY.value) / zoomScale.value
 
-  const scaleRatio = newScale / zoomScale.value
   zoomScale.value = newScale
 
   panX.value = mouseX - matrixX * newScale
