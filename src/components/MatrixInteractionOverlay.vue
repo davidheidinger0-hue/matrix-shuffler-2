@@ -3,10 +3,21 @@ import { useDatasetStore } from '@/stores/dataset'
 import { useInteractionStore } from '@/stores/interaction'
 import { useVisualizationStore } from '@/stores/visualization'
 import { getMatrixLayout } from '@/utils/matrixLayout'
+import { computed } from 'vue'
 
 const visualizationStore = useVisualizationStore()
 const datasetStore = useDatasetStore()
 const interactionStore = useInteractionStore()
+const draggedName = computed(() => {
+  const matrix = datasetStore.currentMatrix
+  const dragState = interactionStore.dragState
+
+  if (!matrix || !dragState) return ''
+
+  return dragState.type === 'row'
+    ? matrix.rowNames[dragState.fromIndex]
+    : matrix.columnNames[dragState.fromIndex]
+})
 
 const getCellSize = () => visualizationStore.settings.cellSize || 40
 type PendingCellDrag = {
@@ -234,7 +245,18 @@ const handleMouseLeave = () => {
     @mousedown="handleMouseDown"
     @mouseup="handleMouseUp"
     @mouseleave="handleMouseLeave"
-  ></div>
+  >
+  <div
+      v-if="interactionStore.dragState"
+      class="drag-tooltip"
+      :style="{
+        left: interactionStore.mousePosition.x + 12 + 'px',
+        top: interactionStore.mousePosition.y + 12 + 'px',
+      }"
+    >
+      {{ draggedName }}
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -244,5 +266,19 @@ const handleMouseLeave = () => {
   z-index: 10;
   background: transparent;
   cursor: default;
+}
+
+.drag-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 20;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(31, 111, 235, 0.15);
+  color: #1f6feb;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.75;
+  white-space: nowrap;
 }
 </style>
