@@ -4,6 +4,8 @@ A web application for matrix reordering.
 
 *This project builds upon the original [Matrix Shuffler](https://github.com/AndrejKnaus/matrix-shuffler) by Esma Karic, Andrej Knaus, and Laura Thaçi.*
 
+Live Demo: [Matrix Shuffler 2](https://davidheidinger0-hue.github.io/matrix-shuffler-2/)
+
 ## Prerequisites
 
 - Node.js (version 16 or higher)
