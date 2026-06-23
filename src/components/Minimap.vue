@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick, reactive, computed } from 'vue'
 
 defineOptions({
   name: 'MiniMap'
@@ -11,9 +11,25 @@ const props = defineProps<{
   version: number
   panX: number
   panY: number
+  zoomScale: number
+}>()
+
+const emit = defineEmits<{
+  (e: 'pan', x: number, y: number): void
 }>()
 const minimapCanvas = ref<HTMLCanvasElement | null>(null)
 const MINIMAP_SIZE = 180
+const minimapContentZoom = ref(1)
+
+const zoomInMinimap = () => {
+  minimapContentZoom.value = Math.min(5, minimapContentZoom.value + 0.25)
+  nextTick(() => drawMinimap())
+}
+
+const zoomOutMinimap = () => {
+  minimapContentZoom.value = Math.max(0.1, minimapContentZoom.value - 0.25)
+  nextTick(() => drawMinimap())
+}
 
 type Rect = {
   x: number
@@ -71,65 +87,57 @@ const drawMinimap = () => {
   if (!mainCanvas || !wrapper) return
 
   const canvas = minimapCanvas.value
-
   if (!canvas) return
-
   const ctx = canvas.getContext('2d')
-
   if (!ctx) return
 
   canvas.width = MINIMAP_SIZE
-  canvas.height = MINIMAP_SIZE
+  canvas.height = MINIMAP_SIZE - 24
 
-  const scale = getScale()
+  const rawBaseWidth = mainCanvas.width / props.zoomScale
+  const rawBaseHeight = mainCanvas.height / props.zoomScale
+  
+  const PADDING = 50
+  const defaultBaseWidth = rawBaseWidth + PADDING * 2
+  const defaultBaseHeight = rawBaseHeight + PADDING * 2
 
-  const scaledWidth =
-    mainCanvas.width * scale
-
-  const scaledHeight =
-    mainCanvas.height * scale
-
-  const offsetX =
-    (MINIMAP_SIZE - scaledWidth) / 2
-
-  const offsetY =
-    (MINIMAP_SIZE - scaledHeight) / 2
-
-  ctx.fillStyle = '#dddddd'
-
-  ctx.fillRect(
-    offsetX,
-    offsetY,
-    scaledWidth,
-    scaledHeight,
+  const defaultScale = Math.min(
+    MINIMAP_SIZE / defaultBaseWidth,
+    (MINIMAP_SIZE - 24) / defaultBaseHeight,
   )
 
-  const viewportX =
-    offsetX - props.panX * scale
+  const scale = defaultScale * minimapContentZoom.value
 
-  const viewportY =
-    offsetY - props.panY * scale
+  const grayBoxWidth = rawBaseWidth * scale
+  const grayBoxHeight = rawBaseHeight * scale
 
-  const viewportWidth =
-    wrapper.clientWidth * scale
+  const offsetX = (MINIMAP_SIZE - grayBoxWidth) / 2
+  const offsetY = ((MINIMAP_SIZE - 24) - grayBoxHeight) / 2
 
-  const viewportHeight =
-    wrapper.clientHeight * scale
+  ctx.fillStyle = '#dddddd'
+  ctx.fillRect(offsetX, offsetY, grayBoxWidth, grayBoxHeight)
   
-  viewport.x = viewportX
-  viewport.y = viewportY
-  viewport.width = viewportWidth
-  viewport.height = viewportHeight
+  // Draw preview of the matrix
+  ctx.drawImage(mainCanvas, offsetX, offsetY, grayBoxWidth, grayBoxHeight)
+
+  const viewportBaseX = -props.panX / props.zoomScale
+  const viewportBaseY = -props.panY / props.zoomScale
+  const viewportBaseWidth = wrapper.clientWidth / props.zoomScale
+  const viewportBaseHeight = wrapper.clientHeight / props.zoomScale
+
+  const rectX = offsetX + viewportBaseX * scale
+  const rectY = offsetY + viewportBaseY * scale
+  const rectWidth = viewportBaseWidth * scale
+  const rectHeight = viewportBaseHeight * scale
+  
+  viewport.x = rectX
+  viewport.y = rectY
+  viewport.width = rectWidth
+  viewport.height = rectHeight
 
   ctx.strokeStyle = 'red'
   ctx.lineWidth = 2
-
-  ctx.strokeRect(
-    viewportX,
-    viewportY,
-    viewportWidth,
-    viewportHeight,
-)
+  ctx.strokeRect(rectX, rectY, rectWidth, rectHeight)
 }
 
 const handleMouseDown = (event: MouseEvent) => {
@@ -153,76 +161,56 @@ const handleMouseDown = (event: MouseEvent) => {
   if (!insideViewport) return
 
   dragState.active = true
-
   dragState.offsetX = mouseX - viewport.x
   dragState.offsetY = mouseY - viewport.y
+
+  window.addEventListener('mousemove', handleViewportMouseMove)
+  window.addEventListener('mouseup', handleViewportMouseUp)
 }
 
-const handleMouseUp = () => {
-  dragState.active = false
-}
-
-// Dragging and scrolling in minimap is deactivated now
-/*const handleMouseMove = (event: MouseEvent) => {
+const handleViewportMouseMove = (event: MouseEvent) => {
   if (!dragState.active) return
 
   const canvas = minimapCanvas.value
-
-  if (!canvas) return
-  if (!props.wrapper) return
-  if (!props.canvas) return
+  if (!canvas || !props.wrapper || !props.canvas) return
 
   const rect = canvas.getBoundingClientRect()
-
   const mouseX = event.clientX - rect.left
   const mouseY = event.clientY - rect.top
 
-  const newViewportX =
-    mouseX - dragState.offsetX
+  const newRectX = mouseX - dragState.offsetX
+  const newRectY = mouseY - dragState.offsetY
 
-  const newViewportY =
-    mouseY - dragState.offsetY
-    const scale = getScale()
+  const rawBaseWidth = props.canvas.width / props.zoomScale
+  const rawBaseHeight = props.canvas.height / props.zoomScale
+  const PADDING = 50
+  const defaultBaseWidth = rawBaseWidth + PADDING * 2
+  const defaultBaseHeight = rawBaseHeight + PADDING * 2
 
-  const scaledWidth =
-    props.canvas.width * scale
-  const scaledHeight =
-    props.canvas.height * scale
-  const offsetX =
-    (MINIMAP_SIZE - scaledWidth) / 2
-  const offsetY =
-    (MINIMAP_SIZE - scaledHeight) / 2
+  const defaultScale = Math.min(MINIMAP_SIZE / defaultBaseWidth, (MINIMAP_SIZE - 24) / defaultBaseHeight)
+  const scale = defaultScale * minimapContentZoom.value
+  
+  const grayBoxWidth = rawBaseWidth * scale
+  const grayBoxHeight = rawBaseHeight * scale
+  
+  const offsetX = (MINIMAP_SIZE - grayBoxWidth) / 2
+  const offsetY = ((MINIMAP_SIZE - 24) - grayBoxHeight) / 2
 
-  const maxViewportX =
-  offsetX + scaledWidth - viewport.width
+  const newViewportBaseX = (newRectX - offsetX) / scale
+  const newViewportBaseY = (newRectY - offsetY) / scale
 
-  const maxViewportY =
-    offsetY + scaledHeight - viewport.height
+  const newPanX = -newViewportBaseX * props.zoomScale
+  const newPanY = -newViewportBaseY * props.zoomScale
 
-  const clampedViewportX = Math.max(
-    offsetX,
-    Math.min(newViewportX, maxViewportX),
-  )
+  emit('pan', newPanX, newPanY)
+}
 
-  const clampedViewportY = Math.max(
-    offsetY,
-    Math.min(newViewportY, maxViewportY),
-  )
-
-  props.wrapper.scrollLeft =
-    (clampedViewportX - offsetX) / scale
-
-  props.wrapper.scrollTop =
-    (clampedViewportY - offsetY) / scale
-}*/
-
-const getScale = () => {
-  if (!props.canvas) return 1
-
-  return Math.min(
-    MINIMAP_SIZE / props.canvas.width,
-    MINIMAP_SIZE / props.canvas.height,
-  )
+const handleViewportMouseUp = () => {
+  if (dragState.active) {
+    dragState.active = false
+    window.removeEventListener('mousemove', handleViewportMouseMove)
+    window.removeEventListener('mouseup', handleViewportMouseUp)
+  }
 }
 
 const handlePanelMouseDown = (event: MouseEvent) => {
@@ -284,11 +272,6 @@ onMounted(async () => {
     handleScroll,
   )
 
-  window.addEventListener(
-    'mouseup',
-    handleMouseUp,
-  )
-
   if (props.wrapper) {
     resizeObserver = new ResizeObserver(() => {
       updateVisualPosition()
@@ -305,7 +288,7 @@ onUnmounted(() => {
 
   window.removeEventListener(
   'mouseup',
-  handleMouseUp,
+  handleViewportMouseUp,
   )
 
   if (resizeObserver) {
@@ -337,7 +320,11 @@ watch(
       class="minimap-handle"
       @mousedown="handlePanelMouseDown"
     >
-      Minimap
+      <span>Minimap</span>
+      <div class="minimap-controls">
+        <button @mousedown.stop @click.stop.prevent="zoomOutMinimap" class="minimap-btn">-</button>
+        <button @mousedown.stop @click.stop.prevent="zoomInMinimap" class="minimap-btn">+</button>
+      </div>
     </div>
 
     <canvas
@@ -366,9 +353,29 @@ watch(
   cursor: grab;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 6px;
   font-size: 12px;
   user-select: none;
+}
+.minimap-controls {
+  display: flex;
+  gap: 4px;
+}
+.minimap-btn {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+.minimap-btn:hover {
+  background: #ddd;
 }
 canvas {
   width: 100%;

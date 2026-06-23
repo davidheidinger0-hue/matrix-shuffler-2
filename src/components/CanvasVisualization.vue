@@ -606,6 +606,11 @@ const handleWheel = (e: WheelEvent) => {
 const isPanning = ref(false)
 const lastPanPos = ref({ x: 0, y: 0 })
 
+const handleMinimapPan = (newPanX: number, newPanY: number) => {
+  panX.value = newPanX
+  panY.value = newPanY
+}
+
 const handleWrapperMouseDown = (e: MouseEvent) => {
   if (e.button === 1) {
     e.preventDefault()
@@ -686,6 +691,8 @@ onUnmounted(() => {
       :version="minimapVersion"
       :pan-x="panX"
       :pan-y="panY"
+      :zoom-scale="zoomScale"
+      @pan="handleMinimapPan"
     />
   </div>
 </template>
