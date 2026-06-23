@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick, reactive, computed } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue'
 
 defineOptions({
   name: 'MiniMap'
