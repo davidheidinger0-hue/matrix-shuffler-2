@@ -521,19 +521,29 @@ const showMinimap = ref(true)
     <div v-if="showAboutModal" class="modal-overlay" @click.self="closeAboutModal">
       <div class="modal-content">
         <button class="modal-close-button" @click="closeAboutModal">&times;</button>
-        <h2>About Matrix Shuffler</h2>
+        <h2>About Matrix Shuffler 2</h2>
         <p>
-          Matrix Shuffler is an interactive tool for visualizing and reordering matrices. It
-          supports various encodings and export options.<br /><br />
+          Matrix Shuffler 2 is an extension of Matrix Shuffler, an interactive tool for
+          visualizing and reordering matrices.  <br />
+          This version adds new features and
+          improvements while building upon the original project.<br /><br />
           <strong>License:</strong> MIT<br />
           <strong
-            >Created as part of the Information Visualisation course at Graz University of
+            >Developed as part of the Information Visualisation course at Graz University of
             Technology (Technische Universität Graz).</strong
           ><br /><br />
-          Created by Andrej Knaus, Esma Karic, and Laura Thaçi.<br /><br />
-          <strong>GitHub Repository:</strong><br />
+          <strong>Original Matrix Shuffler:</strong><br />
+          Created by Andrej Knaus, Esma Karic, and Laura Thaçi. <br /><br />
+          <strong>Matrix Shuffler 2:</strong><br />
+          Extended and further developed by Lukas Auer, David Heidinger, Nina Tschikof and Christina Vogel<br /><br />
+          <strong>GitHub Repositories:</strong><br />
+          Matrix Shuffler:
           <a href="https://github.com/AndrejKnaus/matrix-shuffler" target="_blank" rel="noopener"
             >https://github.com/AndrejKnaus/matrix-shuffler</a
+          ><br />
+          Matrix Shuffler 2:
+          <a href="https://github.com/davidheidinger0-hue/matrix-shuffler-2" target="_blank" rel="noopener"
+            >https://github.com/davidheidinger0-hue/matrix-shuffler-2</a
           >
         </p>
       </div>
@@ -544,11 +554,12 @@ const showMinimap = ref(true)
         <button class="modal-close-button" @click="closeHowToUseModal">&times;</button>
         <h2>How to use</h2>
         <ul style="padding-left: 1.2em">
-          <li><b>Reorder row/column:</b> Click and drag row/column cells</li>
-          <li><b>Pan visualization:</b> Hold <kbd>Space</kbd> and drag cells</li>
-          <li><b>Show tooltip:</b> Hover cell and hold <kbd>Alt</kbd> or <kbd>⌘ Cmd</kbd></li>
+          <li><b>Reorder row/column:</b> Click and drag row or column labels</li>
+          <li><b>Zoom:</b> Use the mouse wheel or touchpad gestures</li>
+          <li><b>Pan visualisation:</b> Use the middle mouse button or drag the red box in the minimap</li>
+          <li><b>Show tooltip:</b> Hover over a cell</li>
           <li><b>Transpose matrix:</b> Use the Actions menu</li>
-          <li><b>Export:</b> Use File menu for PNG/SVG/CSV</li>
+          <li><b>Export:</b> Use the File menu for PNG, SVG, or CSV export</li>
         </ul>
       </div>
     </div>
