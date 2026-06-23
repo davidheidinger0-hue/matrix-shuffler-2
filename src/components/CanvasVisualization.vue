@@ -19,6 +19,9 @@ const zoomScale = ref(1)
 const panX = ref(0)
 const panY = ref(0)
 const hasInitiallyCentered = ref(false)
+const props = defineProps<{
+  showMinimap: boolean
+}>()
 
 //const minTopPadding = 140
 const rowLabelMargin = 20
@@ -686,6 +689,7 @@ onUnmounted(() => {
       </div>
     </div>
     <Minimap
+      v-show="props.showMinimap"
       :wrapper="wrapperRef"
       :canvas="canvasRef"
       :version="minimapVersion"

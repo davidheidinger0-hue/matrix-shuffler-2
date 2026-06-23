@@ -294,6 +294,8 @@ const openHowToUseModal = () => {
 const closeHowToUseModal = () => {
   showHowToUseModal.value = false
 }
+
+const showMinimap = ref(true)
 </script>
 
 <template>
@@ -368,6 +370,16 @@ const closeHowToUseModal = () => {
               <a href="#" @click.prevent="openAboutModal">About</a>
             </div>
           </li>
+
+          <li class="menu-separator">|</li>
+            <li class="menu-button">
+              <a href="#"
+                @click.prevent="showMinimap = !showMinimap"
+                :class="{ active: showMinimap }"
+              >
+                Minimap{{ showMinimap ? ' ✓' : '' }}
+              </a>
+            </li>
         </ul>
       </nav>
     </header>
@@ -419,7 +431,10 @@ const closeHowToUseModal = () => {
               </button>
             </div>
 
-            <CanvasVisualization v-if="selectedRenderer === 'canvas'" />
+            <CanvasVisualization 
+              v-if="selectedRenderer === 'canvas'" 
+              :showMinimap="showMinimap"
+            />
 
             <PixiVisualizationWrapper
              v-else
@@ -614,6 +629,20 @@ const closeHowToUseModal = () => {
 
 .main-nav li {
   position: relative; /* For dropdown positioning */
+}
+
+.menu-button a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.menu-separator {
+  color: white;
+  padding: 14px 4px;
+  user-select: none;
 }
 
 .main-nav a.dropbtn {
