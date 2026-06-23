@@ -11,6 +11,7 @@ const props = defineProps<{
   version: number
 }>()
 const minimapCanvas = ref<HTMLCanvasElement | null>(null)
+  const wrapperRef = ref<HTMLDivElement | null>(null)
 const MINIMAP_SIZE = 180
 
 type Rect = {
@@ -43,7 +44,7 @@ const position = reactive({
 
 const drawMinimap = () => {
   const mainCanvas = props.canvas
-  const wrapper = props.wrapper
+  const wrapper = wrapperRef.value
 
   if (!mainCanvas || !wrapper) return
 
@@ -139,14 +140,14 @@ const handleMouseUp = () => {
   dragState.active = false
 }
 
-// Dragging and scrolling in minimap is deactivated now
-/*const handleMouseMove = (event: MouseEvent) => {
+// Dragging and scrolling in minimap
+const handleMouseMove = (event: MouseEvent) => {
   if (!dragState.active) return
 
   const canvas = minimapCanvas.value
 
   if (!canvas) return
-  if (!props.wrapper) return
+  if (!wrapperRef.value) return
   if (!props.canvas) return
 
   const rect = canvas.getBoundingClientRect()
@@ -186,12 +187,12 @@ const handleMouseUp = () => {
     Math.min(newViewportY, maxViewportY),
   )
 
-  props.wrapper.scrollLeft =
+  wrapperRef.value.scrollLeft =
     (clampedViewportX - offsetX) / scale
 
-  props.wrapper.scrollTop =
+  wrapperRef.value.scrollTop =
     (clampedViewportY - offsetY) / scale
-}*/
+}
 
 const getScale = () => {
   if (!props.canvas) return 1
@@ -233,17 +234,19 @@ const handleScroll = () => {
 onMounted(async () => {
   await nextTick()
 
+  wrapperRef.value = props.wrapper
+
   drawMinimap()
 
-  props.wrapper?.addEventListener(
+  wrapperRef.value?.addEventListener(
     'scroll',
     handleScroll,
   )
 
-  /*window.addEventListener(
+  window.addEventListener(
     'mousemove',
     handleMouseMove,
-  )*/
+  )
 
   window.addEventListener(
     'mouseup',
@@ -252,19 +255,19 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  props.wrapper?.removeEventListener(
+  wrapperRef.value?.removeEventListener(
     'scroll',
     handleScroll,
   )
 
-  /*window.removeEventListener(
-  'mousemove',
-  handleMouseMove,
-  )*/
+  window.removeEventListener(
+    'mousemove',
+    handleMouseMove,
+  )
 
-window.removeEventListener(
-  'mouseup',
-  handleMouseUp,
+  window.removeEventListener(
+    'mouseup',
+    handleMouseUp,
   )
 })
 
