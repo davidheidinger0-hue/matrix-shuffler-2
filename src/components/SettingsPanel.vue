@@ -195,7 +195,20 @@
             >
             <span>Normalisation: {{ datasetStore.normalizationType }}</span>
           </div>
+          <div class="interaction-toggle">
+            <span>Cell Drag & Drop</span>
+
+            <label class="switch">
+              <input
+                type="checkbox"
+                v-model="localSettings.enableCellDragging"
+                @change="applySettings"
+              />
+              <span class="slider"></span>
+            </label>
+          </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -223,6 +236,7 @@ const localSettings = reactive<VisualizationSettings>({
   normalization: 'none',
   labelRotation: 90,
   cellSize: 40,
+  enableCellDragging: false,
 })
 
 //const colorSchemes = {
@@ -254,6 +268,7 @@ const resetSettings = () => {
   localSettings.minColor = '#e3f0fb'
   localSettings.maxColor = '#7daee6'
   localSettings.normalization = 'none'
+  localSettings.enableCellDragging = false
   localSettings.labelRotation = 45 // Changed from 90 to match new default
   localSettings.cellSize = 40
   applySettings()
@@ -593,5 +608,55 @@ onMounted(() => {
 .btn-auto:hover,
 .btn-preset:hover {
   background: var(--color-background-soft);
+}
+
+.interaction-toggle {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+.switch {
+  position: relative;
+  width: 42px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 22px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 2px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.switch input:checked + .slider {
+  background: var(--color-primary);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(20px);
 }
 </style>
