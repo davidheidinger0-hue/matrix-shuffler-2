@@ -26,6 +26,7 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "gulp": "^5.0.0",
     "@playwright/test": "^1.53.0",
     "@tauri-apps/cli": "^2.5.0",
     "@tsconfig/node22": "^22.0.2",
