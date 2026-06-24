@@ -114,6 +114,7 @@ To automatically build the app and extract the standalone `.exe` directly to the
 
 ```bash
 pnpm build:desktop
+```
 
 > **Note**: This skips installer creation of DMG, MSI, AppImage for faster builds. If you need installers, use `pnpm tauri build` instead.
 
