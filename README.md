@@ -107,16 +107,13 @@ pnpm tauri dev
 
 ### 6. Build for Production
 
-To create a production desktop build with the `.exe` in the root directory:
+### 6. Automated Desktop Build (Gulp)
+
+To streamline the process of building the Tauri application and extracting the final executable, this project uses a custom Gulp pipeline.
+To automatically build the app and extract the standalone `.exe` directly to the project root directory, run:
 
 ```bash
-pnpm tauri:build
-```
-
-The Tauri build outputs native executables to the `src-tauri/target/release/` folder:
-- **Windows**: `src-tauri/target/release/matrix-shuffler.exe`
-- **macOS**: `src-tauri/target/release/matrix-shuffler`
-- **Linux**: `src-tauri/target/release/matrix-shuffler`
+pnpm build:desktop
 
 > **Note**: This skips installer creation of DMG, MSI, AppImage for faster builds. If you need installers, use `pnpm tauri build` instead.
 
