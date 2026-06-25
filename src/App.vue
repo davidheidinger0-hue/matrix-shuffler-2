@@ -523,8 +523,8 @@ const showMinimap = ref(true)
         <button class="modal-close-button" @click="closeAboutModal">&times;</button>
         <h2>About Matrix Shuffler 2</h2>
         <p>
-          Matrix Shuffler 2 is an extension of Matrix Shuffler, an interactive tool for
-          visualizing and reordering matrices.  <br />
+          Matrix Shuffler 2 is an extension of Matrix Shuffler 1, an interactive tool for
+          visualising and reordering matrices.  <br />
           This version adds new features and
           improvements while building upon the original project.<br /><br />
           <strong>License:</strong> MIT<br />
@@ -532,12 +532,12 @@ const showMinimap = ref(true)
             >Developed as part of the Information Visualisation course at Graz University of
             Technology (Technische Universität Graz).</strong
           ><br /><br />
-          <strong>Original Matrix Shuffler:</strong><br />
+          <strong>Matrix Shuffler 1:</strong><br />
           Created by Andrej Knaus, Esma Karic, and Laura Thaçi. <br /><br />
           <strong>Matrix Shuffler 2:</strong><br />
           Extended and further developed by Lukas Auer, David Heidinger, Nina Tschikof and Christina Vogel<br /><br />
           <strong>GitHub Repositories:</strong><br />
-          Matrix Shuffler:
+          Matrix Shuffler 1:
           <a href="https://github.com/AndrejKnaus/matrix-shuffler" target="_blank" rel="noopener"
             >https://github.com/AndrejKnaus/matrix-shuffler</a
           ><br />
@@ -554,7 +554,7 @@ const showMinimap = ref(true)
         <button class="modal-close-button" @click="closeHowToUseModal">&times;</button>
         <h2>How to use</h2>
         <ul style="padding-left: 1.2em">
-          <li><b>Reorder row/column:</b> Click and drag row or column labels</li>
+          <li><b>Reorder rows/columns:</b> Drag cells, or row/column labels. Cell dragging can be disabled in Settings</li>
           <li><b>Zoom:</b> Use the mouse wheel or touchpad gestures</li>
           <li><b>Pan visualisation:</b> Use the middle mouse button or drag the red box in the minimap</li>
           <li><b>Show tooltip:</b> Hover over a cell</li>

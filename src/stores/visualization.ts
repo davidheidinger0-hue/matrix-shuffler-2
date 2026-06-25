@@ -36,7 +36,7 @@ export const useVisualizationStore = defineStore('visualization', {
       normalization: 'none',
       labelRotation: 45,
       cellSize: 40,
-      enableCellDragging: false,
+      enableCellDragging: true,
     },
   }),
   actions: {
