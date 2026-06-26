@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import PixiVisualizationWrapper from './components/PixiVisualizationWrapper.vue'
+//import PixiVisualizationWrapper from './components/PixiVisualizationWrapper.vue'
 import DataTable from './components/DataTable.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 
@@ -15,7 +15,7 @@ const showImportModal = ref(false)
 const showExampleModal = ref(false)
 const showAboutModal = ref(false)
 const showHowToUseModal = ref(false)
-const selectedRenderer = ref<'canvas' | 'pixi'>('canvas')
+//const selectedRenderer = ref<'canvas'>('canvas')
 
 const visualizationStore = useVisualizationStore()
 const datasetStore = useDatasetStore()
@@ -49,19 +49,19 @@ const closeImportModal = () => {
 
 const { fileError } = useFileUpload()
 const dataTableRef = ref()
-const pixiVisRef = ref<typeof PixiVisualizationWrapper | null>(null)
+//const pixiVisRef = ref<typeof PixiVisualizationWrapper | null>(null)
 const importedDisplayName = ref<string | null>(null)
 
 const handleDataChange = () => {
   // Data updated in visualization
 }
 
-const exportAsPNG = () => {
+/*const exportAsPNG = () => {
   const name = importedDisplayName.value
     ? importedDisplayName.value.replace(/\.[^/.]+$/, '.png')
     : 'exported_image.png'
   pixiVisRef.value?.$refs?.pixiVisualizationRef?.exportCanvasAsPNG?.(name)
-}
+}*/
 
 const exportAsSVG = () => {
   const matrix = datasetStore.currentMatrix
@@ -309,7 +309,7 @@ const showMinimap = ref(true)
               <a href="#" @click.prevent="handleImportData">Import Data</a>
               <a href="#" @click.prevent="openExampleModal">Load Example Dataset</a>
               <a href="#" @click.prevent="exportDatasetAsCSV">Export Data</a>
-              <a href="#" @click="exportAsPNG">Export as PNG</a>
+              <!-- <a href="#" @click="exportAsPNG">Export as PNG</a> -->
               <a href="#" @click="exportAsSVG">Export as SVG</a>
             </div>
           </li>
@@ -417,13 +417,16 @@ const showMinimap = ref(true)
               <button class="chevron-btn chevron-left" @click="toggleDataTablePanel" :title="showDataTablePanel ? 'Hide Data' : 'Show Data'">
                 {{ showDataTablePanel ? '❮' : '❯' }}
               </button>
-              
-              <div class="renderer-select-group">
+
+              <!-- <div class="renderer-select-group">
                 <label for="renderer-select">Renderer:</label>
                 <select id="renderer-select" v-model="selectedRenderer">
                   <option value="canvas">Canvas 2D</option>
                   <option value="pixi">PixiJS</option>
                 </select>
+              </div>-->
+              <div class="renderer-title">
+                Canvas 2D
               </div>
 
               <button class="chevron-btn chevron-right" @click="toggleSettingsPanel" :title="showSettingsPanel ? 'Hide Settings' : 'Show Settings'">
@@ -431,8 +434,8 @@ const showMinimap = ref(true)
               </button>
             </div>
 
-            <CanvasVisualization 
-              v-if="selectedRenderer === 'canvas'" 
+            <!-- <CanvasVisualization
+              v-if="selectedRenderer === 'canvas'"
               :showMinimap="showMinimap"
             />
 
@@ -440,7 +443,12 @@ const showMinimap = ref(true)
              v-else
               ref="pixiVisRef"
               :useRandomData="false"
-          />
+          /> -->
+
+            <CanvasVisualization
+              v-if="true"
+              :showMinimap="showMinimap"
+            />
           </div>
         </div>
 
