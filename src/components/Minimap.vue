@@ -161,6 +161,7 @@ const handleMouseDown = (event: MouseEvent) => {
   if (!insideViewport) return
 
   dragState.active = true
+  document.body.style.cursor = 'grabbing'
   dragState.offsetX = mouseX - viewport.x
   dragState.offsetY = mouseY - viewport.y
 
@@ -208,6 +209,7 @@ const handleViewportMouseMove = (event: MouseEvent) => {
 const handleViewportMouseUp = () => {
   if (dragState.active) {
     dragState.active = false
+    document.body.style.cursor = ''
     window.removeEventListener('mousemove', handleViewportMouseMove)
     window.removeEventListener('mouseup', handleViewportMouseUp)
   }

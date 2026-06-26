@@ -271,7 +271,6 @@ const handleMouseLeave = () => {
   inset: 0;
   z-index: 10;
   background: transparent;
-  cursor: default;
 }
 
 .drag-tooltip {
