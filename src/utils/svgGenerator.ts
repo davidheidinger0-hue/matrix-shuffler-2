@@ -145,9 +145,50 @@ export function generateMatrixSVG(
         const r = (cellSize / 2) * norm
         svg += `  <rect x='${x}' y='${y}' width='${cellSize}' height='${cellSize}' fill='white' fill-opacity='1' stroke='${gridStroke}' />\n`
         svg += `  <circle cx='${x + cellSize / 2}' cy='${y + cellSize / 2}' r='${r}' fill='${getColor(norm)}' fill-opacity='${norm}' stroke='${shapeStroke}' />\n`
-      }
+      }else if (encoding === 'bar-chart') {
+        const barHeight = Math.round(norm * cellSize)
+        const yStart = y + cellSize - barHeight
+        const inkColor = getColor(1)
+
+        svg += `  <rect x='${x}' y='${y}' width='${cellSize - 2}' height='${cellSize - 2}' fill='white' stroke='${getColor(norm)}' stroke-width='1' />\n`
+
+        if (barHeight > 0) {
+          svg += `  <rect x='${x}' y='${yStart}' width='${cellSize - 2}' height='${barHeight}' fill='${inkColor}' stroke='${inkColor}' stroke-width='1' />\n`
+        }
+      } else if (encoding === 'hatched-bar-charts') {
+        const safeValue = Math.max(0, Math.min(1, norm))
+        const inkColor = getColor(1)
+        const hatchHeight = Math.round(Math.min(1, safeValue * 2) * cellSize)
+
+        const clipId = `hatch-clip-${i}-${j}`
+
+        svg += `  <rect x='${x}' y='${y}' width='${cellSize - 2}' height='${cellSize - 2}' fill='white' stroke='${getColor(norm)}' stroke-width='1' />\n`
+
+        if (hatchHeight > 0) {
+          svg += `  <clipPath id='${clipId}'>\n`
+          svg += `    <rect x='${x}' y='${y}' width='${cellSize - 2}' height='${hatchHeight}' />\n`
+          svg += `  </clipPath>\n`
+          svg += `  <g clip-path='url(#${clipId})'>\n`
+
+          const gap = 4
+
+          for (let k = -cellSize; k < cellSize * 2; k += gap) {
+            svg += `    <line x1='${x + k}' y1='${y + hatchHeight}' x2='${x + k + hatchHeight}' y2='${y}' stroke='${inkColor}' stroke-width='1' />\n`
+          }
+
+          svg += `  </g>\n`
+        }
+
+        if (safeValue > 0.5) {
+          const blackHeight = Math.round((safeValue - 0.5) * 2 * cellSize)
+          const blackYStart = y + cellSize - blackHeight
+
+          svg += `  <rect x='${x}' y='${blackYStart}' width='${cellSize - 2}' height='${blackHeight}' fill='${inkColor}' stroke='${inkColor}' stroke-width='1' />\n`
+        }
+
     }
   }
+}
   svg += `</g>\n`
 
   svg += `</svg>\n`
