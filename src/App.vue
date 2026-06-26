@@ -63,6 +63,16 @@ const handleDataChange = () => {
   pixiVisRef.value?.$refs?.pixiVisualizationRef?.exportCanvasAsPNG?.(name)
 }*/
 
+const visualizationRef = ref<{ exportAsPNG?: (filename: string) => void } | null>(null)
+
+const exportAsPNG = () => {
+  const name = importedDisplayName.value
+    ? importedDisplayName.value.replace(/\.[^/.]+$/, '.png')
+    : 'exported_image.png'
+
+  visualizationRef.value?.exportAsPNG?.(name)
+}
+
 const exportAsSVG = () => {
   const matrix = datasetStore.currentMatrix
   if (!matrix || !matrix.rowNames.length || !matrix.columnNames.length) {
@@ -310,6 +320,7 @@ const showMinimap = ref(true)
               <a href="#" @click.prevent="openExampleModal">Load Example Dataset</a>
               <a href="#" @click.prevent="exportDatasetAsCSV">Export Data</a>
               <!-- <a href="#" @click="exportAsPNG">Export as PNG</a> -->
+              <a href="#" @click.prevent="exportAsPNG">Export as PNG</a>
               <a href="#" @click="exportAsSVG">Export as SVG</a>
             </div>
           </li>
@@ -447,8 +458,11 @@ const showMinimap = ref(true)
 
             <CanvasVisualization
               v-if="true"
+              ref="visualizationRef"
               :showMinimap="showMinimap"
             />
+
+            
           </div>
         </div>
 

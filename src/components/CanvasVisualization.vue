@@ -637,6 +637,20 @@ onUnmounted(() => {
   window.removeEventListener('mousemove', handleWrapperMouseMove)
   window.removeEventListener('mouseup', handleWrapperMouseUp)
 })
+
+const exportAsPNG = (filename = 'exported_image.png') => {
+  const canvas = canvasRef.value
+  if (!canvas) return
+
+  const link = document.createElement('a')
+  link.download = filename
+  link.href = canvas.toDataURL('image/png')
+  link.click()
+}
+
+defineExpose({
+  exportAsPNG,
+})
 </script>
 
 <template>
