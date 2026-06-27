@@ -127,7 +127,7 @@ jobs:
             }
 
             if (platform === 'windows-latest' && baseFileName) {
-              const standalonePath = path.join(process.cwd(), 'src-tauri', 'target', 'release', 'matrix-shuffler.exe');
+              const standalonePath = path.join(process.cwd(), 'src-tauri', 'target', 'release', 'matrix-shuffler-2.exe');
               
               if (fs.existsSync(standalonePath)) {
                 const standaloneName = `${baseFileName}.exe`; 
