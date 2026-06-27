@@ -89,7 +89,7 @@ jobs:
         id: tauri_build
         uses: tauri-apps/tauri-action@v0
 
-      - name: Rename and Upload Assets
+      - name: Upload Assets
         uses: actions/github-script@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -100,31 +100,42 @@ jobs:
             const { execSync } = require('child_process');
 
             const platform = '${{ matrix.platform }}';
-            const osMap = {
-              'windows-latest': 'Windows',
-              'macos-latest': 'macOS',
-              'ubuntu-22.04': 'Ubuntu'
-            };
-            const baseName = osMap[platform];
-
+            const tag = '${{ needs.create-release.outputs.tag_name }}';
             const artifacts = ${{ steps.tauri_build.outputs.artifactPaths }};
-            for (const artifact of artifacts) {
-              const fileName = path.basename(artifact);
-              
-              let arch = 'x64';
-              if (fileName.includes('aarch64')) arch = 'aarch64';
-              else if (fileName.includes('arm64')) arch = 'arm64';
 
-              let ext = '';
-              if (fileName.endsWith('.tar.gz')) {
-                ext = fileName.endsWith('.app.tar.gz') ? '.app.tar.gz' : '.tar.gz';
-              } else {
-                ext = fileName.substring(fileName.indexOf('.'));
+            let baseFileName = '';
+
+            for (const artifact of artifacts) {
+              let fileName = path.basename(artifact);
+              
+              if (platform === 'windows-latest' && fileName.endsWith('.exe')) {
+                if (!fileName.includes('setup')) {
+                  fileName = fileName.replace('.exe', '-setup.exe');
+                }
+              }
+
+              const newPath = path.join(path.dirname(artifact), fileName);
+              if (artifact !== newPath) {
+                fs.renameSync(artifact, newPath);
               }
               
-              const newName = `${baseName}-${arch}${ext}`;
-              const newPath = path.join(path.dirname(artifact), newName);
-              fs.renameSync(artifact, newPath);
+              execSync(`gh release upload ${tag} "${newPath}"`, { stdio: 'inherit' });
               
-              execSync(`gh release upload ${{ needs.create-release.outputs.tag_name }} "${newPath}"`, { stdio: 'inherit' });
+              if (platform === 'windows-latest' && fileName.endsWith('.msi')) {
+                baseFileName = fileName.replace('.msi', '');
+              }
+            }
+
+            if (platform === 'windows-latest' && baseFileName) {
+              const standalonePath = path.join(process.cwd(), 'src-tauri', 'target', 'release', 'matrix-shuffler.exe');
+              
+              if (fs.existsSync(standalonePath)) {
+                const standaloneName = `${baseFileName}.exe`; 
+                const newStandalonePath = path.join(path.dirname(standalonePath), standaloneName);
+                
+                fs.renameSync(standalonePath, newStandalonePath);
+                execSync(`gh release upload ${tag} "${newStandalonePath}"`, { stdio: 'inherit' });
+              } else {
+                console.warn(`Standalone .exe not found at ${standalonePath}. Double check your binary name.`);
+              }
             }
